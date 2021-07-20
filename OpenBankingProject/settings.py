@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'OpenBankingApp',
+    'rest_framework',
+    'OpenBankingController'
 ]
 
 MIDDLEWARE = [
