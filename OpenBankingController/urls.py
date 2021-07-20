@@ -8,4 +8,6 @@ urlpatterns = [
     path('user/', views.getUserInfo),
     path('allAccountList/', views.getAllAccountList),
     path('allAccountTransList/', views.getAllAcountTransList),
+    path('allAccountBalanceAmt/',views.getBalanceAmt),
+    path('monthlyWithdrawlList/', views.getMonthlyWithdrawl),
 ]
