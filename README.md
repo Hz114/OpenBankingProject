@@ -20,6 +20,8 @@
 ```
 {
   "SECRET_KEY" : "Project폴더의 settings.py의 SECRET_KEY"
+  "API_TOKEN" : "오픈뱅킹 API token" ,
+  "API_USER_SEQ_NO" : "오픈뱅킹 API user sequence number"
 }
 ```  
 
@@ -34,7 +36,7 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
->Django DB admin생성
+>Django DB admin생성 <br/>
 `python manage.py createsuperuser`
 
 ### 참고

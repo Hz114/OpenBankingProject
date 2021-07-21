@@ -1,6 +1,5 @@
-# OpenBankingController / views.py
-
 import django.http
+from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpRequest
 from django.shortcuts import render
 from rest_framework.views import APIView
@@ -27,6 +26,7 @@ secret_file = os.path.join(BASE_DIR, 'secrets.json')
 with open(secret_file) as f:
     secrets = json.loads(f.read())
 
+
 def get_secret(setting, secrets=secrets):
     try:
         return secrets[setting]
@@ -34,11 +34,13 @@ def get_secret(setting, secrets=secrets):
         error_msg = "Set the {} environment variable".format(setting)
         raise ImproperlyConfigured(error_msg)
 
+
 token = get_secret("API_TOKEN")
 header = "Bearer" + token
 user_seq_no = get_secret("API_USER_SEQ_NO")
 
-class OpenBankingControllerView: #결과값 dict로 반환
+
+class OpenBankingControllerView:  # 결과값 dict로 반환
     def goconnection(apiURL):
         try:
             # print(apiURL)
@@ -49,7 +51,7 @@ class OpenBankingControllerView: #결과값 dict로 반환
                                                    "charset": "utf-8", "Authorization": header},
                                           params={"user_seq_no": user_seq_no})
             responseCode = httpConnection.status_code
-            response = httpConnection.json() #json 형태일 경우 dictionary로 변환
+            response = httpConnection.json()  # json 형태일 경우 dictionary로 변환
             # print(responseCode)
             # print(headers, params)
             # print(response)
@@ -59,7 +61,8 @@ class OpenBankingControllerView: #결과값 dict로 반환
             print(e)
             return str(e)
 
-class getAllAcountList: #dict로 반환
+
+class getAllAcountList:  # dict로 반환
     def getallaccountlist(self):
         apiURL = "https://developers.kftc.or.kr/proxy/account/list"
         apiURL = apiURL + "?&include_cancel_yn=N&sort_order=D"
@@ -82,6 +85,7 @@ class getAllAcountList: #dict로 반환
 
         return accountList
 
+
 class getAllAcountTransactionList:
     def getallaccounttransactionlist(self):
 
@@ -90,32 +94,31 @@ class getAllAcountTransactionList:
 
         from_date = "20210601"
         to_date = "20210630"
-        
-        before_inquiry_trace_info = ["333","222","123","111"]
-        allAccountList = getAllAcountList.getallaccountlist(self) #dict로 불러온다
+
+        before_inquiry_trace_info = ["333", "222", "123", "111"]
+        allAccountList = getAllAcountList.getallaccountlist(self)  # dict로 불러온다
 
         jsonArray = allAccountList["fintech_use_num"]
         fintechUseNum = []
 
-        for item in jsonArray: #fintech만 추출 -> list에 담기
+        for item in jsonArray:  # fintech만 추출 -> list에 담기
             fintechUseNum.append(str(item))
         # print(fintechUseNum)
         # print(len(fintechUseNum))
 
         totalResult = []
 
-
         for i in range(len(fintechUseNum)):
 
-            randomNumber = str(int(random.randint(1,10000) + (Max-Min)))
+            randomNumber = str(int(random.randint(1, 10000) + (Max - Min)))
 
-            bank_tran_id =  "M202112767" + "U" + randomNumber  # 이용기관코드 -> 뒤에 9자리 난수생성으로 사용
+            bank_tran_id = "M202112767" + "U" + randomNumber  # 이용기관코드 -> 뒤에 9자리 난수생성으로 사용
 
             apiURL = "https://testapi.openbanking.or.kr/v2.0/account/transaction_list/fin_num"
-            apiURL = apiURL + "?bank_tran_id=" + bank_tran_id + "&fintech_use_num=" + fintechUseNum[i] + "&inquiry_type=A&inquiry_base=D&from_date=" + from_date + "&to_date=" + to_date + "&sort_order=D&tran_dtime=20201001150133"
+            apiURL = apiURL + "?bank_tran_id=" + bank_tran_id + "&fintech_use_num=" + fintechUseNum[
+                i] + "&inquiry_type=A&inquiry_base=D&from_date=" + from_date + "&to_date=" + to_date + "&sort_order=D&tran_dtime=20201001150133"
 
-
-            result = OpenBankingControllerView.goconnection(apiURL) #dict로 반환
+            result = OpenBankingControllerView.goconnection(apiURL)  # dict로 반환
             jsonTranObject = result
             jsonTranArray = result["res_list"]
 
@@ -123,7 +126,9 @@ class getAllAcountTransactionList:
             bankResList = []
 
             bank_name = jsonTranObject["bank_name"]
+            balance_amt = jsonTranObject["balance_amt"]
             bankTranList["bank_name"] = bank_name
+            bankTranList["balance_amt"] = balance_amt
 
             for items in jsonTranArray:
                 bankResList.append(items)
@@ -146,6 +151,7 @@ def getUserInfo(request):
 
         return Response(jsonObject)
 
+
 @api_view(['GET'])
 def getAllAccountList(request, self=None):
     if request.method == 'GET':
@@ -156,6 +162,7 @@ def getAllAccountList(request, self=None):
 
         return Response(jsonObject)
 
+
 @api_view(['GET'])
 def getAllAcountTransList(request, self=None):
     if request.method == 'GET':
@@ -163,22 +170,27 @@ def getAllAcountTransList(request, self=None):
 
     return Response(result)
 
+
 @api_view(['GET'])
 def getBalanceAmt(request, self=None):
     if request.method == 'GET':
 
         result = getAllAcountTransactionList.getallaccounttransactionlist(self)
 
-        print(result)
-        BalanceAmt = defaultdict(list)
+        jsonArray = result
 
+        balanceAmtlist = []
 
-        #BalanceAmt["balace_amt"] = result["balance_amt"]
-        BalanceAmt["bank_name"] = result["bank_name"]
+        for items in jsonArray:
+            balanceAmtdict = {}
+            bankName = items["bank_name"]
+            balanceAmt = items["balance_amt"]
+            balanceAmtdict["bank_name"] = bankName
+            balanceAmtdict["balance_amt"] = balanceAmt
+            balanceAmtlist.append(balanceAmtdict)
 
-        BalanceAmt = dict(BalanceAmt)
+    return Response(balanceAmtlist)
 
-    return Response(BalanceAmt)
 
 @api_view(['GET'])
 def getMonthlyWithdrawl(request, self=None):
@@ -247,8 +259,4 @@ def main(request):
 
 
     return render(request, 'main.html')
-
-
-
-
 
