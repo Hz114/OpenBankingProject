@@ -173,8 +173,8 @@ def getBalanceAmt(request, self=None):
 
         BalanceAmt = defaultdict(list)
 
-        BalanceAmt["balace_amt"] = result["balance_amt"]
-        BalanceAmt["bank_name"] = result["bank_name"]
+        BalanceAmt["balace_amt"] = str(result["balance_amt"])
+        BalanceAmt["bank_name"] = str(result["bank_name"])
 
         BalanceAmt = dict(BalanceAmt)
 
