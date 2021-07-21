@@ -10,4 +10,7 @@ urlpatterns = [
     path('allAccountTransList/', views.getAllAcountTransList),
     path('allAccountBalanceAmt/',views.getBalanceAmt),
     path('monthlyWithdrawlList/', views.getMonthlyWithdrawl),
+
+    path('main/', views.main),
+
 ]

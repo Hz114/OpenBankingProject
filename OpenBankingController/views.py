@@ -61,7 +61,7 @@ class OpenBankingControllerView: #결과값 dict로 반환
 
 class getAllAcountList: #dict로 반환
     def getallaccountlist(self):
-        apiURL = apiURL = "https://developers.kftc.or.kr/proxy/account/list"
+        apiURL = "https://developers.kftc.or.kr/proxy/account/list"
         apiURL = apiURL + "?&include_cancel_yn=N&sort_order=D"
 
         result = OpenBankingControllerView.goconnection(apiURL)
@@ -147,8 +147,6 @@ def getUserInfo(request):
         jsonresult = json.dumps(result)
         jsonObject = json.loads(jsonresult)
 
-        # 다음 json파일을 훔쳐서 표시하자~~
-        # print(jsonObject)
         return Response(jsonObject)
 
 @api_view(['GET'])
@@ -174,6 +172,7 @@ def getBalanceAmt(request, self=None):
 
         result = getAllAcountTransactionList.getallaccounttransactionlist(self)
 
+        print(result)
         BalanceAmt = defaultdict(list)
 
         BalanceAmt["balace_amt"] = result["balance_amt"]
@@ -207,7 +206,49 @@ def getMonthlyWithdrawl(request, self=None):
         return Response(MonthlyWithdrrawlList)
 
 
+def getAllAccount(self=None):
+    result = getAllAcountList.getallaccountlist(self)
 
+    jsonResult = json.dumps(result)
+    jsonObject = json.loads(jsonResult)
+
+    return jsonObject
+
+
+def getBalance(self=None):
+    result = getAllAcountTransactionList.getallaccounttransactionlist(self)
+
+    BalanceAmt = defaultdict(list)
+
+    BalanceAmt["balace_amt"] = result["balance_amt"]
+    BalanceAmt["bank_name"] = result["bank_name"]
+
+    BalanceAmt = dict(BalanceAmt)
+    return BalanceAmt
+
+def main(request):
+    accounts = getAllAccount()
+    accountBalances = getBalance()
+
+    accountKey = list(accounts.keys())
+    len(accounts[accountKey[0]])
+
+    #print(accounts)
+    #print(accountBalances)
+    #print(len(accountBalances))
+
+    accountsInfo = []
+
+    # for idx in range()
+
+    for account in accounts:
+        print(accounts[account])
+        for idx in range(len(accounts[account])):
+            print(accounts[account][idx])
+
+
+
+    return render(request, 'main.html')
 
 
 
