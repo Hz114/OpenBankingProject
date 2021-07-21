@@ -179,7 +179,6 @@ def getBalanceAmt(request, self=None):
 
         balanceAmtlist = []
 
-
         for items in jsonArray:
          balanceAmtdict = {}
          bankName = items["bank_name"]
@@ -192,24 +191,25 @@ def getBalanceAmt(request, self=None):
 
 @api_view(['GET'])
 def getMonthlyWithdrawl(request, self=None):
-    if request.method:
+    if request.method == 'GET':
         result = getAllAcountTransactionList.getallaccounttransactionlist(self)
 
-        jsonObject = result
-        jsonArray = jsonObject["res_list"]
+        jsonArray = result
+
         MonthlyWithdrrawlList = []
         reslistdict = {}
 
         for items in jsonArray:
-            if items["inout_type"] == "출금":
-                reslistdict["tran_date"] = items["tran_date"]
-                reslistdict["tran_type"] = items["tran_type"]
-                reslistdict["print_content"] = items["print_content"]
-                reslistdict["balance_name"] = items["branch_name"]
+            jsonBankArray = items["res_list"]
+            for item in jsonBankArray:
+                if item["inout_type"] == "출금":
+                    reslistdict["tran_date"] = item["tran_date"]
+                    reslistdict["tran_type"] = item["tran_type"]
+                    reslistdict["print_content"] = item["print_content"]
+                    reslistdict["balance_name"] = item["branch_name"]
 
-                MonthlyWithdrrawlList.append(reslistdict)
+                    MonthlyWithdrrawlList.append(reslistdict)
 
-        # MonthlyWithdrrawlList = json.dumps(MonthlyWithdrrawlList) #json으로 보내기
         print(type(MonthlyWithdrrawlList))
         return Response(MonthlyWithdrrawlList)
 
