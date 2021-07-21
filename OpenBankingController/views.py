@@ -1,6 +1,7 @@
 # OpenBankingController / views.py
 
 import django.http
+from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpRequest
 from django.shortcuts import render
 from rest_framework.views import APIView
@@ -122,8 +123,11 @@ class getAllAcountTransactionList:
             bankTranList = {}
             bankResList = []
 
+            
             bank_name = jsonTranObject["bank_name"]
+            balance_amt = jsonTranObject["balance_amt"]
             bankTranList["bank_name"] = bank_name
+            bankTranList["balance_amt"] = balance_amt
 
             for items in jsonTranArray:
                 bankResList.append(items)
@@ -171,14 +175,20 @@ def getBalanceAmt(request, self=None):
 
         result = getAllAcountTransactionList.getallaccounttransactionlist(self)
 
-        BalanceAmt = defaultdict(list)
+        jsonArray = result
 
-        BalanceAmt["balace_amt"] = result["balance_amt"]
-        BalanceAmt["bank_name"] = result["bank_name"]
+        balanceAmtlist = []
 
-        BalanceAmt = dict(BalanceAmt)
 
-    return Response(BalanceAmt)
+        for items in jsonArray:
+         balanceAmtdict = {}
+         bankName = items["bank_name"]
+         balanceAmt = items["balance_amt"]
+         balanceAmtdict["bank_name"] = bankName
+         balanceAmtdict["balance_amt"] = balanceAmt
+         balanceAmtlist.append(balanceAmtdict)
+
+    return Response(balanceAmtlist)
 
 @api_view(['GET'])
 def getMonthlyWithdrawl(request, self=None):
