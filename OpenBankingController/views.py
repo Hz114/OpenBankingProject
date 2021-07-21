@@ -17,16 +17,30 @@ from django.http import HttpResponse
 import random
 from django.http import JsonResponse
 import django.http.response
-# Create your views here.
+# hide API KEY
+import os
+from pathlib import Path
 
+# hide API KEY
 
-token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiIxMTAwOTk1NDEzIiwic2NvcGUiOlsiaW5xdWlyeSIsImxvZ2luIiwidHJhbnNmZXIiXSwiaXNzIjoiaHR0cHM6Ly93d3cub3BlbmJhbmtpbmcub3Iua3IiLCJleHAiOjE2MzQ0NzQ5NDQsImp0aSI6ImE3N2VmZjVlLWQxZTktNDE3Ni1iNDljLWJhNDBlOTZmYjUyZSJ9.a_OiYfRaei-qCRbZtnpi2LOmma2hVjt5qR5h_7Ilu78"
+BASE_DIR = Path(__file__).resolve().parent.parent
+secret_file = os.path.join(BASE_DIR, 'secrets.json')
+
+with open(secret_file) as f:
+    secrets = json.loads(f.read())
+
+def get_secret(setting, secrets=secrets):
+    try:
+        return secrets[setting]
+    except KeyError:
+        error_msg = "Set the {} environment variable".format(setting)
+        raise ImproperlyConfigured(error_msg)
+
+token = get_secret("API_TOKEN")
 header = "Bearer" + token
-user_seq_no = "1100995413"
-
+user_seq_no = get_secret("API_USER_SEQ_NO")
 
 class OpenBankingControllerView: #결과값 dict로 반환
-
     def goconnection(apiURL):
         try:
             # print(apiURL)
@@ -45,14 +59,10 @@ class OpenBankingControllerView: #결과값 dict로 반환
 
         except Exception as e:
             print(e)
-
             return str(e)
 
-
 class getAllAcountList: #dict로 반환
-
     def getallaccountlist(self):
-
         apiURL = apiURL = "https://developers.kftc.or.kr/proxy/account/list"
         apiURL = apiURL + "?&include_cancel_yn=N&sort_order=D"
 
@@ -72,12 +82,9 @@ class getAllAcountList: #dict로 반환
 
         accountList = dict(accountList)
 
-
         return accountList
 
-
 class getAllAcountTransactionList:
-
     def getallaccounttransactionlist(self):
 
         Min = 111111111
@@ -134,6 +141,9 @@ def getUserInfo(request):
 
         jsonresult = json.dumps(result)
         jsonObject = json.loads(jsonresult)
+
+        # 다음 json파일을 훔쳐서 표시하자~~
+        # print(jsonObject)
         return Response(jsonObject)
 
 @api_view(['GET'])

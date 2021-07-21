@@ -56,6 +56,8 @@ defusedxml @ file:///tmp/build/80754af9/defusedxml_1615228127516/work
 diff-match-patch @ file:///tmp/build/80754af9/diff-match-patch_1594828741838/work
 distributed @ file:///C:/ci/distributed_1617384289923/work
 Django==3.2.5
+django-filter==2.4.0
+djangorestframework==3.12.4
 docutils @ file:///C:/ci/docutils_1617481617511/work
 entrypoints==0.3
 et-xmlfile==1.0.1
@@ -108,6 +110,7 @@ libarchive-c @ file:///tmp/build/80754af9/python-libarchive-c_1617780486945/work
 llvmlite==0.36.0
 locket==0.2.1
 lxml @ file:///C:/ci/lxml_1616443455957/work
+Markdown==3.3.4
 MarkupSafe==1.1.1
 matplotlib @ file:///C:/ci/matplotlib-suite_1613408055530/work
 mccabe==0.6.1
