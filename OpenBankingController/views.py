@@ -1,10 +1,8 @@
 # OpenBankingController / views.py
-from ast import literal_eval
 
 import django.http
 from django.http import HttpRequest
 from django.shortcuts import render
-from pandas.core import strings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,8 +13,8 @@ import pandas as pd
 from collections import defaultdict
 from django.http import HttpResponse
 import random
-from django.http import JsonResponse
 import django.http.response
+
 # hide API KEY
 import os
 from pathlib import Path
@@ -70,7 +68,6 @@ class getAllAcountList: #dict로 반환
 
         jsonResult = json.dumps(result)
         jsonObject = json.loads(jsonResult)
-        print(jsonObject)
         jsonArray = jsonObject['res_list']
 
         accountList = defaultdict(list)
@@ -81,6 +78,7 @@ class getAllAcountList: #dict로 반환
             accountList["bank_name"].append(items["bank_name"])
 
         accountList = dict(accountList)
+        print(accountList)
 
         return accountList
 
@@ -120,8 +118,15 @@ class getAllAcountTransactionList:
             jsonTranObject = result
             jsonTranArray = result["res_list"]
 
+
+            balance_amt = jsonTranObject["balance_amt"]
+            bank_name = jsonTranObject["bank_name"]
+            allAccountTranList["balance_amt"].append(balance_amt)
+            allAccountTranList["bank_name"].append(bank_name)
+
             for items in jsonTranArray:
                 allAccountTranList["res_list"].append(items)
+
             # jsonResult = json.dumps(result, ensure_ascii=False)
             # print(jsonResult)
             # totalResult += jsonResult #String
@@ -162,8 +167,46 @@ def getAllAcountTransList(request, self=None):
         result = getAllAcountTransactionList.getallaccounttransactionlist(self)
 
     return Response(result)
-# @api_view(['GET'])
-# def getSumOfAllAcountDeposit(request, self=None):
+
+@api_view(['GET'])
+def getBalanceAmt(request, self=None):
+    if request.method == 'GET':
+
+        result = getAllAcountTransactionList.getallaccounttransactionlist(self)
+
+        BalanceAmt = defaultdict(list)
+
+        BalanceAmt["balace_amt"] = result["balance_amt"]
+        BalanceAmt["bank_name"] = result["bank_name"]
+
+        BalanceAmt = dict(BalanceAmt)
+
+    return Response(BalanceAmt)
+
+@api_view(['GET'])
+def getMonthlyWithdrawl(request, self=None):
+    if request.method:
+        result = getAllAcountTransactionList.getallaccounttransactionlist(self)
+
+        jsonObject = result
+        jsonArray = jsonObject["res_list"]
+        MonthlyWithdrrawlList = []
+        reslistdict = {}
+
+        for items in jsonArray:
+            if items["inout_type"] == "출금":
+                reslistdict["tran_date"] = items["tran_date"]
+                reslistdict["tran_type"] = items["tran_type"]
+                reslistdict["print_content"] = items["print_content"]
+                reslistdict["balance_name"] = items["branch_name"]
+
+                MonthlyWithdrrawlList.append(reslistdict)
+
+        # MonthlyWithdrrawlList = json.dumps(MonthlyWithdrrawlList) #json으로 보내기
+        print(type(MonthlyWithdrrawlList))
+        return Response(MonthlyWithdrrawlList)
+
+
 
 
 
