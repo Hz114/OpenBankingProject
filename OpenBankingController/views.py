@@ -94,8 +94,9 @@ class getAllAcountTransactionList:
         # print(fintechUseNum)
         # print(len(fintechUseNum))
 
-        totalResult = ""
-        allAccountTranList = defaultdict(list)
+        totalResult = []
+
+
         for i in range(len(fintechUseNum)):
 
             randomNumber = str(int(random.randint(1,10000) + (Max-Min)))
@@ -110,23 +111,19 @@ class getAllAcountTransactionList:
             jsonTranObject = result
             jsonTranArray = result["res_list"]
 
+            bankTranList = {}
+            bankResList = []
 
-            balance_amt = jsonTranObject["balance_amt"]
             bank_name = jsonTranObject["bank_name"]
-            allAccountTranList["balance_amt"].append(balance_amt)
-            allAccountTranList["bank_name"].append(bank_name)
+            bankTranList["bank_name"] = bank_name
 
             for items in jsonTranArray:
-                allAccountTranList["res_list"].append(items)
+                bankResList.append(items)
 
-            # jsonResult = json.dumps(result, ensure_ascii=False)
-            # print(jsonResult)
-            # totalResult += jsonResult #String
+            bankTranList["res_list"] = bankResList
+            totalResult.append(bankTranList)
 
-        allAccountTranList = dict(allAccountTranList)
-        # allAccountTranList=dict(allAccountTranList)
-        # print(allAccountTranList)
-        return allAccountTranList
+        return totalResult
 
 
 @api_view(['GET'])
