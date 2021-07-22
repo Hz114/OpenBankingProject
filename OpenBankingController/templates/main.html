@@ -7,64 +7,31 @@
   <!-- Responsive cards -->
   <div class="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
     <!-- Card -->
-    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
-      <div>
-        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
-          카카오은행
-        </p>
-        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
-          331000000000
-        </p>
-        <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
-          50,000원
-        </p>
+    {% for account in accountInfoList %}
+      <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+
+        <div>
+          <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+            {{ account.bank_name }}
+          </p>
+          <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+            {{ account.account_num_masked }}
+          </p>
+          <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+            {{ account.balance_amt }}원
+          </p>
+        </div>
       </div>
-    </div>
-   <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
-      <div>
-        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
-          우리은행
-        </p>
-        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
-          113000000000
-        </p>
-        <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
-          200,000원
-        </p>
-      </div>
-    </div><div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
-      <div>
-        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
-          신한은행
-        </p>
-        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
-          151000000000
-        </p>
-        <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
-          400,000원
-        </p>
-      </div>
-    </div><div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
-      <div>
-        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
-          NH농협은행
-        </p>
-        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
-          302000000000
-        </p>
-        <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
-          1,100,000원
-        </p>
-      </div>
-    </div>
+    {% endfor %}
   </div>
   <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
     은행별 지출 내역
   </h2>
 
   <!-- 은행 상세정보 1 -->
+  {% for accountTrans in accountTransList %}
   <h4 class="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
-    카카오은행
+    {{ accountTrans.bank_name }}
   </h4>
   <div class="w-full overflow-hidden rounded-lg shadow-xs">
     <div class="w-full overflow-x-auto">
@@ -78,58 +45,35 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+          {% for res in accountTrans.res_list|slice:":5"  %}
+          {% if res.inout_type == '입금' %}
+          {% endif %}
           <tr class="text-gray-700 dark:text-gray-400">
-            <td class="px-4 py-3"> 2021-07-10 </td>
+            <td class="px-4 py-3"> {{ res.tran_date }} </td>
             <td class="px-4 py-3 text-xs">
-              <!--
+              {% if res.inout_type == '입금' %}
               <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                +
+                +{{ res.tran_amt }}
               </span>
-              -->
+              {% else %}
               <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
-                -30,000
+                -{{ res.tran_amt }}
               </span>
+              {% endif %}
             </td>
-            <td class="px-4 py-3"> 50,000 </td>
-            <td class="px-4 py-3"> 이체 </td>
+            <td class="px-4 py-3"> {{ res.after_balance_amt }} </td>
+            <td class="px-4 py-3"> {{ res.print_content }} {{ res.branch_name }} </td>
           </tr>
-          <tr class="text-gray-700 dark:text-gray-400">
-              <td class="px-4 py-3"> 2021-07-05 </td>
-              <td class="px-4 py-3 text-xs">
-                <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                  +20,000
-                </span>
-                <!--
-                <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
-                  -30,000
-                </span>
-                -->
-              </td>
-              <td class="px-4 py-3"> 80,000 </td>
-              <td class="px-4 py-3"> 입금 </td>
-            </tr>
-            <tr class="text-gray-700 dark:text-gray-400">
-            <td class="px-4 py-3"> 2021-07-03 </td>
-            <td class="px-4 py-3 text-xs">
-              <!--
-              <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                +
-              </span>
-              -->
-              <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
-                -20,000
-              </span>
-            </td>
-            <td class="px-4 py-3"> 60,000 </td>
-            <td class="px-4 py-3"> 네이버쇼핑 </td>
-          </tr>
+          {% endfor %}
+
         </tbody>
       </table>
     </div>
   </div>
-
   <br>
-  <!-- 은행 상세정보 2 -->
+  {% endfor %}
+
+  <!--
   <h4 class="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
     우리은행
   </h4>
@@ -148,11 +92,6 @@
           <tr class="text-gray-700 dark:text-gray-400">
             <td class="px-4 py-3"> 2021-07-10 </td>
             <td class="px-4 py-3 text-xs">
-              <!--
-              <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                +
-              </span>
-              -->
               <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
                 -30,000
               </span>
@@ -166,11 +105,6 @@
                 <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
                   +20,000
                 </span>
-                <!--
-                <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
-                  -30,000
-                </span>
-                -->
               </td>
               <td class="px-4 py-3"> 80,000 </td>
               <td class="px-4 py-3"> 입금 </td>
@@ -178,11 +112,7 @@
             <tr class="text-gray-700 dark:text-gray-400">
             <td class="px-4 py-3"> 2021-07-03 </td>
             <td class="px-4 py-3 text-xs">
-              <!--
-              <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                +
-              </span>
-              -->
+
               <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
                 -20,000
               </span>
@@ -196,7 +126,7 @@
   </div>
 
   <br>
-  <!-- 은행 상세정보 3 -->
+
   <h4 class="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
     신한은행
   </h4>
@@ -215,11 +145,7 @@
           <tr class="text-gray-700 dark:text-gray-400">
             <td class="px-4 py-3"> 2021-07-10 </td>
             <td class="px-4 py-3 text-xs">
-              <!--
-              <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                +
-              </span>
-              -->
+
               <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
                 -30,000
               </span>
@@ -233,11 +159,7 @@
                 <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
                   +20,000
                 </span>
-                <!--
-                <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
-                  -30,000
-                </span>
-                -->
+
               </td>
               <td class="px-4 py-3"> 80,000 </td>
               <td class="px-4 py-3"> 입금 </td>
@@ -245,11 +167,7 @@
             <tr class="text-gray-700 dark:text-gray-400">
             <td class="px-4 py-3"> 2021-07-03 </td>
             <td class="px-4 py-3 text-xs">
-              <!--
-              <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                +
-              </span>
-              -->
+
               <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
                 -20,000
               </span>
@@ -263,7 +181,6 @@
   </div>
 
   <br>
-  <!-- 은행 상세정보 4 -->
   <h4 class="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
     NH농협은행
   </h4>
@@ -282,11 +199,7 @@
           <tr class="text-gray-700 dark:text-gray-400">
             <td class="px-4 py-3"> 2021-07-10 </td>
             <td class="px-4 py-3 text-xs">
-              <!--
-              <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                +
-              </span>
-              -->
+
               <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
                 -30,000
               </span>
@@ -300,11 +213,7 @@
                 <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
                   +20,000
                 </span>
-                <!--
-                <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
-                  -30,000
-                </span>
-                -->
+
               </td>
               <td class="px-4 py-3"> 80,000 </td>
               <td class="px-4 py-3"> 입금 </td>
@@ -312,11 +221,7 @@
             <tr class="text-gray-700 dark:text-gray-400">
             <td class="px-4 py-3"> 2021-07-03 </td>
             <td class="px-4 py-3 text-xs">
-              <!--
-              <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                +
-              </span>
-              -->
+
               <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
                 -20,000
               </span>
@@ -328,7 +233,7 @@
       </table>
     </div>
   </div>
-
+-->
   <!-- Charts -->
   <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
     월별 카드지출 내역

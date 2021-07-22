@@ -13,10 +13,11 @@ from collections import defaultdict
 from django.http import HttpResponse
 import random
 import django.http.response
-
 # hide API KEY
 import os
 from pathlib import Path
+
+import datetime
 
 # hide API KEY
 
@@ -81,7 +82,7 @@ class getAllAcountList:  # dict로 반환
             accountList["bank_name"].append(items["bank_name"])
 
         accountList = dict(accountList)
-        print(accountList)
+        #print(accountList)
 
         return accountList
 
@@ -218,9 +219,81 @@ def getMonthlyWithdrawl(request, self=None):
         return Response(MonthlyWithdrrawlList)
 
 # Create your views here.
+def getUserAccountInfo():
+    apiURL = "https://developers.kftc.or.kr/proxy/user/me"
+    result = OpenBankingControllerView.goconnection(apiURL)
+    jsonresult = json.dumps(result)
+    jsonObject = json.loads(jsonresult)
+    return jsonObject
+
+def getAccountBalanceAmt(self=None):
+    result = getAllAcountTransactionList.getallaccounttransactionlist(self)
+    jsonArray = result
+
+    balanceAmtlist = []
+    for items in jsonArray:
+        balanceAmtdict = {}
+        bankName = items["bank_name"]
+        balanceAmt = items["balance_amt"]
+        balanceAmtdict["bank_name"] = bankName
+        balanceAmtdict["balance_amt"] = balanceAmt
+        balanceAmtlist.append(balanceAmtdict)
+    return balanceAmtlist
+
+def getAccountTrans(self=None):
+    result = getAllAcountTransactionList.getallaccounttransactionlist(self)
+
+    return result
+
 def main(request):
-    return render(request, 'main.html')
-    #return render(request, 'base.html')
+
+    '''
+    card
+     - 은행명, 계좌번호, 잔액 등
+    '''
+    accountInfoList = []
+
+    userAccountInfo = getUserAccountInfo()
+    userAccountBalance = getAccountBalanceAmt()
+    for accountInfo in userAccountInfo['res_list']:
+        accountDic = {}
+        accountDic['bank_name'] = accountInfo['bank_name']
+        accountDic['account_num_masked'] = accountInfo['account_num_masked']
+
+        for accountBalance in userAccountBalance:
+            if accountInfo['bank_name'] == accountBalance['bank_name']:
+                accountDic['balance_amt'] = format(int(accountBalance['balance_amt']), ',')
+                break
+        accountInfoList.append(accountDic)
+
+    '''
+    accountInfoList값 확인
+    for accountInfo in accountInfoList:
+        print(accountInfo['bank_name'])
+        print(accountInfo['account_num_masked'])
+        print(accountInfo['balance_amt'])
+    '''
+
+    accountTransList = getAccountTrans()
+
+    for accountTrans in accountTransList:
+        print(accountTrans["bank_name"])
+        idx = 0
+        for res in accountTrans["res_list"]:
+            res["idx"] = idx
+            idx += 1
+
+            dateandtime = res["tran_date"] + res["tran_time"]
+            dateandtime = datetime.datetime.strptime(dateandtime, '%Y%m%d%H%M%S')
+            res["tran_date"] = res["tran_time"] = dateandtime
+
+            res["tran_amt"] = format(int(res["tran_amt"]), ',')
+            res["after_balance_amt"] = format(int(res["after_balance_amt"]), ',')
+
+            print(res)
+
+
+    return render(request, 'main.html', {'accountInfoList':accountInfoList, 'accountTransList':accountTransList})
 
 
 def login(request):
