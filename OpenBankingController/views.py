@@ -212,6 +212,7 @@ def getMonthlyWithdrawl(request, self=None):
             for item in jsonBankArray:
                 if item["inout_type"] == "출금":
                     reslistdict["tran_date"] = item["tran_date"]
+                    reslistdict["tran_time"] = item["tran_time"]
                     reslistdict["tran_type"] = item["tran_type"]
                     reslistdict["print_content"] = item["print_content"]
                     reslistdict["balance_name"] = item["branch_name"]
@@ -251,7 +252,7 @@ def getAccountTrans(self=None):
 def main(request):
 
     '''
-    card
+    # card
      - 은행명, 계좌번호, 잔액 등
     '''
     accountInfoList = []
@@ -277,14 +278,23 @@ def main(request):
         print(accountInfo['balance_amt'])
     '''
 
+
+    '''
+    # table
+     - 각 은행별 입출금 상세 내역
+    '''
     accountTransList = getAccountTrans()
 
     for accountTrans in accountTransList:
         print(accountTrans["bank_name"])
-        idx = 0
+        #idx = 0
+
+        accountTrans = sorted(accountTrans["res_list"]["tran_date"])
+        print(accountTrans)
+
         for res in accountTrans["res_list"]:
-            res["idx"] = idx
-            idx += 1
+            # res["idx"] = idx
+            # idx += 1
 
             dateandtime = res["tran_date"] + res["tran_time"]
             dateandtime = datetime.datetime.strptime(dateandtime, '%Y%m%d%H%M%S')
@@ -293,11 +303,39 @@ def main(request):
             res["tran_amt"] = format(int(res["tran_amt"]), ',')
             res["after_balance_amt"] = format(int(res["after_balance_amt"]), ',')
 
-            print(res)
-
+        print(accountTrans)
 
     return render(request, 'main.html', {'accountInfoList':accountInfoList, 'accountTransList':accountTransList})
 
+def detail(request, bank_name):
+    '''
+    # table
+     - 은행별 입출금 상세 내역
+    '''
+    accountTransList = getAccountTrans()
+    accountDetailTransList = []
+
+    minDate = datetime.datetime.strptime('99991231000000', '%Y%m%d%H%M%S')
+    maxDate = datetime.datetime.strptime('00010101000000', '%Y%m%d%H%M%S')
+
+    for accountTrans in accountTransList:
+        if accountTrans["bank_name"] == bank_name:
+            for res in accountTrans["res_list"]:
+                dateandtime = res["tran_date"] + res["tran_time"]
+                dateandtime = datetime.datetime.strptime(dateandtime, '%Y%m%d%H%M%S')
+                res["tran_date"] = res["tran_time"] = dateandtime
+
+                if minDate > dateandtime:
+                    minDate = dateandtime
+                elif maxDate < dateandtime:
+                    maxDate = dateandtime
+
+                res["tran_amt"] = format(int(res["tran_amt"]), ',')
+                res["after_balance_amt"] = format(int(res["after_balance_amt"]), ',')
+            accountDetailTransList = accountTrans
+            break
+
+    return render(request, 'detail.html', {'bankName': bank_name,'minDate': minDate, 'maxDate': maxDate, 'accountDetailTransList': accountDetailTransList})
 
 def login(request):
     return render(request, 'login.html')
