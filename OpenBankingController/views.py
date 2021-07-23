@@ -259,53 +259,45 @@ def main(request):
 
     userAccountInfo = getUserAccountInfo()
     userAccountBalance = getAccountBalanceAmt()
-    for accountInfo in userAccountInfo['res_list']:
-        accountDic = {}
-        accountDic['bank_name'] = accountInfo['bank_name']
-        accountDic['account_num_masked'] = accountInfo['account_num_masked']
 
-        for accountBalance in userAccountBalance:
-            if accountInfo['bank_name'] == accountBalance['bank_name']:
-                accountDic['balance_amt'] = format(int(accountBalance['balance_amt']), ',')
-                break
-        accountInfoList.append(accountDic)
+    try:
+        for accountInfo in userAccountInfo['res_list']:
+            accountDic = {}
+            accountDic['bank_name'] = accountInfo['bank_name']
+            accountDic['account_num_masked'] = accountInfo['account_num_masked']
 
-    '''
-    accountInfoList값 확인
-    for accountInfo in accountInfoList:
-        print(accountInfo['bank_name'])
-        print(accountInfo['account_num_masked'])
-        print(accountInfo['balance_amt'])
-    '''
+            for accountBalance in userAccountBalance:
+                if accountInfo['bank_name'] == accountBalance['bank_name']:
+                    accountDic['balance_amt'] = format(int(accountBalance['balance_amt']), ',')
+                    break
+            accountInfoList.append(accountDic)
 
+        '''
+        # table
+         - 각 은행별 입출금 상세 내역
+        '''
+        accountTransList = getAccountTrans()
 
-    '''
-    # table
-     - 각 은행별 입출금 상세 내역
-    '''
-    accountTransList = getAccountTrans()
+        for accountTrans in accountTransList:
+            print(accountTrans["bank_name"])
 
-    for accountTrans in accountTransList:
-        print(accountTrans["bank_name"])
-        #idx = 0
+            for res in accountTrans["res_list"]:
+                # res["idx"] = idx
+                # idx += 1
 
-        accountTrans = sorted(accountTrans["res_list"]["tran_date"])
-        print(accountTrans)
+                dateandtime = res["tran_date"] + res["tran_time"]
+                dateandtime = datetime.datetime.strptime(dateandtime, '%Y%m%d%H%M%S')
+                res["tran_date"] = res["tran_time"] = dateandtime
 
-        for res in accountTrans["res_list"]:
-            # res["idx"] = idx
-            # idx += 1
+                res["tran_amt"] = format(int(res["tran_amt"]), ',')
+                res["after_balance_amt"] = format(int(res["after_balance_amt"]), ',')
 
-            dateandtime = res["tran_date"] + res["tran_time"]
-            dateandtime = datetime.datetime.strptime(dateandtime, '%Y%m%d%H%M%S')
-            res["tran_date"] = res["tran_time"] = dateandtime
+            print(accountTrans)
 
-            res["tran_amt"] = format(int(res["tran_amt"]), ',')
-            res["after_balance_amt"] = format(int(res["after_balance_amt"]), ',')
-
-        print(accountTrans)
-
-    return render(request, 'main.html', {'accountInfoList':accountInfoList, 'accountTransList':accountTransList})
+        return render(request, 'main.html',
+                          {'accountInfoList': accountInfoList, 'accountTransList': accountTransList})
+    except KeyError:
+        return render(request, 'error.html')
 
 def detail(request, bank_name):
     '''
@@ -318,24 +310,26 @@ def detail(request, bank_name):
     minDate = datetime.datetime.strptime('99991231000000', '%Y%m%d%H%M%S')
     maxDate = datetime.datetime.strptime('00010101000000', '%Y%m%d%H%M%S')
 
-    for accountTrans in accountTransList:
-        if accountTrans["bank_name"] == bank_name:
-            for res in accountTrans["res_list"]:
-                dateandtime = res["tran_date"] + res["tran_time"]
-                dateandtime = datetime.datetime.strptime(dateandtime, '%Y%m%d%H%M%S')
-                res["tran_date"] = res["tran_time"] = dateandtime
+    try:
+        for accountTrans in accountTransList:
+            if accountTrans["bank_name"] == bank_name:
+                for res in accountTrans["res_list"]:
+                    dateandtime = res["tran_date"] + res["tran_time"]
+                    dateandtime = datetime.datetime.strptime(dateandtime, '%Y%m%d%H%M%S')
+                    res["tran_date"] = res["tran_time"] = dateandtime
 
-                if minDate > dateandtime:
-                    minDate = dateandtime
-                elif maxDate < dateandtime:
-                    maxDate = dateandtime
+                    if minDate > dateandtime:
+                        minDate = dateandtime
+                    elif maxDate < dateandtime:
+                        maxDate = dateandtime
 
-                res["tran_amt"] = format(int(res["tran_amt"]), ',')
-                res["after_balance_amt"] = format(int(res["after_balance_amt"]), ',')
-            accountDetailTransList = accountTrans
-            break
-
-    return render(request, 'detail.html', {'bankName': bank_name,'minDate': minDate, 'maxDate': maxDate, 'accountDetailTransList': accountDetailTransList})
+                    res["tran_amt"] = format(int(res["tran_amt"]), ',')
+                    res["after_balance_amt"] = format(int(res["after_balance_amt"]), ',')
+                accountDetailTransList = accountTrans
+                break
+        return render(request, 'detail.html', {'bankName': bank_name,'minDate': minDate, 'maxDate': maxDate, 'accountDetailTransList': accountDetailTransList})
+    except KeyError:
+        return render(request, 'error.html')
 
 def login(request):
     return render(request, 'login.html')
