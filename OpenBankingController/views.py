@@ -255,12 +255,12 @@ def main(request):
     # card
      - 은행명, 계좌번호, 잔액 등
     '''
-    accountInfoList = []
-
-    userAccountInfo = getUserAccountInfo()
-    userAccountBalance = getAccountBalanceAmt()
-
     try:
+        accountInfoList = []
+
+        userAccountInfo = getUserAccountInfo()
+        userAccountBalance = getAccountBalanceAmt()
+
         for accountInfo in userAccountInfo['res_list']:
             accountDic = {}
             accountDic['bank_name'] = accountInfo['bank_name']
@@ -304,15 +304,18 @@ def detail(request, bank_name):
     # table
      - 은행별 입출금 상세 내역
     '''
-    accountTransList = getAccountTrans()
-    accountDetailTransList = []
-
-    minDate = datetime.datetime.strptime('99991231000000', '%Y%m%d%H%M%S')
-    maxDate = datetime.datetime.strptime('00010101000000', '%Y%m%d%H%M%S')
-
     try:
+        accountTransList = getAccountTrans()
+        accountDetailTransList = []
+
+        minDate = datetime.datetime.strptime('99991231000000', '%Y%m%d%H%M%S')
+        maxDate = datetime.datetime.strptime('00010101000000', '%Y%m%d%H%M%S')
+
+        cntTrans = 0
+
         for accountTrans in accountTransList:
             if accountTrans["bank_name"] == bank_name:
+                cntTrans = len(accountTrans["res_list"])
                 for res in accountTrans["res_list"]:
                     dateandtime = res["tran_date"] + res["tran_time"]
                     dateandtime = datetime.datetime.strptime(dateandtime, '%Y%m%d%H%M%S')
@@ -327,9 +330,12 @@ def detail(request, bank_name):
                     res["after_balance_amt"] = format(int(res["after_balance_amt"]), ',')
                 accountDetailTransList = accountTrans
                 break
-        return render(request, 'detail.html', {'bankName': bank_name,'minDate': minDate, 'maxDate': maxDate, 'accountDetailTransList': accountDetailTransList})
+        return render(request, 'detail.html', {'bankName': bank_name, 'cntTrans': cntTrans,
+                                               'minDate': minDate, 'maxDate': maxDate, 'accountDetailTransList': accountDetailTransList})
     except KeyError:
         return render(request, 'error.html')
 
 def login(request):
     return render(request, 'login.html')
+
+
