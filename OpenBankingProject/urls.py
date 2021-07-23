@@ -15,11 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from OpenBankingApp import views
+from OpenBankingController import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.index, name='index'),
+    path('', views.main, name='main'),
+    path('detail/<str:bank_name>', views.detail, name='detail'),
     path('login/', views.login, name='login'),
     path('open/', include('OpenBankingController.urls')),
 ]

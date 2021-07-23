@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container px-6 mx-auto grid">
+  <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
+    {{ bankName }}
+  </h2>
+  <h4 class="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
+    {{ minDate }} ~ {{ maxDate }}
+  </h4>
+
+  <div class="w-full overflow-hidden rounded-lg shadow-xs">
+    <div class="w-full overflow-x-auto">
+      <table class="w-full whitespace-no-wrap">
+        <thead>
+          <tr class="text-sm font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+            <th class="px-4 py-3">날짜</th>
+            <th class="px-4 py-3">거래금액</th>
+            <th class="px-4 py-3">잔액</th>
+            <th class="px-4 py-3">사용처</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+          {% for res in accountDetailTransList.res_list  %}
+          {% if res.inout_type == '입금' %}
+          {% endif %}
+          <tr class="text-gray-700 dark:text-gray-400">
+            <td class="px-4 py-3"> {{ res.tran_date }} </td>
+            <td class="px-4 py-3 text-xs">
+              {% if res.inout_type == '입금' %}
+              <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
+                +{{ res.tran_amt }}
+              </span>
+              {% else %}
+              <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
+                -{{ res.tran_amt }}
+              </span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-3"> {{ res.after_balance_amt }} </td>
+            <td class="px-4 py-3"> {{ res.print_content }} {{ res.branch_name }} </td>
+          </tr>
+          {% endfor %}
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <br>
+</div>
+{% endblock%}
