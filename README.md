@@ -38,6 +38,6 @@ python manage.py migrate
 
 >Django DB admin생성 <br/>
 `python manage.py createsuperuser`
-
+__
 ### 참고
 > :

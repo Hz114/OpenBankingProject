@@ -223,6 +223,8 @@ def getMonthlyWithdrawl(request, self=None):
         return Response(MonthlyWithdrrawlList)
 
 # Create your views here.
+
+
 def getUserAccountInfo():
     apiURL = "https://developers.kftc.or.kr/proxy/user/me"
     result = OpenBankingControllerView.goconnection(apiURL)
@@ -249,7 +251,7 @@ def getAccountTrans(self=None):
 
     return result
 
-def main(request):
+def index(request):
 
     '''
     # card
@@ -261,8 +263,10 @@ def main(request):
         userAccountInfo = getUserAccountInfo()
         userAccountBalance = getAccountBalanceAmt()
 
+        idx = 0
         for accountInfo in userAccountInfo['res_list']:
             accountDic = {}
+            accountDic['bank_idx'] = idx
             accountDic['bank_name'] = accountInfo['bank_name']
             accountDic['account_num_masked'] = accountInfo['account_num_masked']
 
@@ -271,16 +275,18 @@ def main(request):
                     accountDic['balance_amt'] = format(int(accountBalance['balance_amt']), ',')
                     break
             accountInfoList.append(accountDic)
+            idx += 1
 
         '''
         # table
          - 각 은행별 입출금 상세 내역
         '''
+        idx = 0
         accountTransList = getAccountTrans()
 
         for accountTrans in accountTransList:
             print(accountTrans["bank_name"])
-
+            accountTrans["bank_idx"] = idx
             for res in accountTrans["res_list"]:
                 # res["idx"] = idx
                 # idx += 1
@@ -293,8 +299,9 @@ def main(request):
                 res["after_balance_amt"] = format(int(res["after_balance_amt"]), ',')
 
             print(accountTrans)
+            idx += 1
 
-        return render(request, 'main.html',
+        return render(request, 'index.html',
                           {'accountInfoList': accountInfoList, 'accountTransList': accountTransList})
     except KeyError:
         return render(request, 'error.html')
@@ -336,6 +343,6 @@ def detail(request, bank_name):
         return render(request, 'error.html')
 
 def login(request):
-    return render(request, 'login.html')
+    return render(request, 'index.html')
 
 
