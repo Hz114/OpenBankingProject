@@ -343,6 +343,7 @@ def detail(request, bank_name):
         return render(request, 'error.html')
 
 def login(request):
-    return render(request, 'index.html')
+    return render(request, 'ui-tables.html')
+
 
 

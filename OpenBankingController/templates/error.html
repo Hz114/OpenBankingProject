@@ -1,6 +1,6 @@
 {% extends "layouts/base-fullscreen.html" %}
 
-{% block title %} 404 Page {% endblock %}
+{% block title %} Error Page {% endblock %}
 
 {% block content %}   
 
@@ -17,12 +17,12 @@
                     <div class="mb-4">
                         <i class="feather x-circle"></i>
                     </div>
-                    <h3 class="mb-4">Error 404</h3>
+                    <h3 class="mb-4">잠시후 다시 시도해 주세요</h3>
 
                     <br />
 
                     <span class="mb-0 text-muted">
-                        Page not found - <a href="/">Home</a> 
+                        페이지를 찾을 수 없습니다 - <a href="{% url 'index' %}">홈</a>
                     </span>
 
                 </div>

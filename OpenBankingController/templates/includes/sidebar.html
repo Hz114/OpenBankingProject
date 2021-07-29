@@ -3,23 +3,29 @@
         <div class="navbar-wrapper">
             <div class="navbar-brand header-logo">
                 <a target="_blank" 
-                   href="https://appseed.us/admin-dashboards/django-dashboard-dattaable" class="b-brand">
+                   href="{% url 'index' %}" class="b-brand">
                     <div class="b-bg">
-                        <i class="feather icon-trending-up"></i>
+                        <i class="feather icon-unlock"></i>
                     </div>
-                    <span class="b-title">Django Datta Able</span>
+                    <span class="b-title">Open Banking</span>
                 </a>
                 <a class="mobile-menu" id="mobile-collapse" href="javascript:"><span></span></a>
             </div>
             <div class="navbar-content scroll-div">
                 <ul class="nav pcoded-inner-navbar">
                     <li class="nav-item pcoded-menu-caption">
-                        <label>Navigation</label>
+                        <label>PAGES</label>
                     </li>
                     <li data-username="dashboard Default Ecommerce CRM Analytics Crypto Project" 
                         class="nav-item {% if 'index' in segment %} active {% endif %}">
-                        <a href="/" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Dashboard</span></a>
+                        <a href="/" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span>
+                            <span class="pcoded-mtext">Dashboard</span></a>
                     </li>
+                    <li data-username="Charts Morris"
+                        class="nav-item {% if 'charts-morris' in segment %} active {% endif %}">
+                        <a href="/charts-morris.html" class="nav-link "><span class="pcoded-micon"><i class="feather icon-pie-chart"></i></span>
+                            <span class="pcoded-mtext">Chart</span></a></li>
+<!--
                     <li class="nav-item pcoded-menu-caption">
                         <label>UI Element</label>
                     </li>
@@ -76,6 +82,7 @@
                             <span class="pcoded-micon"><i class="feather icon-power"></i></span><span class="pcoded-mtext">Logout</span>
                         </a>
                     </li>
+                    -->
                 </ul>
             </div>
         </div>
