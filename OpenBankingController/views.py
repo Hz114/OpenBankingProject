@@ -248,8 +248,8 @@ def getAccountBalanceAmt(self=None):
 
 def getAccountTrans(self=None):
     result = getAllAcountTransactionList.getallaccounttransactionlist(self)
-
     return result
+
 
 def index(request):
 
@@ -260,10 +260,16 @@ def index(request):
     try:
         accountInfoList = []
 
+        # user의 개인정보 불러오기
+        # http://127.0.0.1:8000/open/user
         userAccountInfo = getUserAccountInfo()
+
+        # 모든 카드의 잔액을 확인
+        # http://127.0.0.1:8000/open/allAccountBalanceAmt
         userAccountBalance = getAccountBalanceAmt()
 
         idx = 0
+        allBalanceAmt = 0
         for accountInfo in userAccountInfo['res_list']:
             accountDic = {}
             accountDic['bank_idx'] = idx
@@ -273,77 +279,81 @@ def index(request):
             for accountBalance in userAccountBalance:
                 if accountInfo['bank_name'] == accountBalance['bank_name']:
                     accountDic['balance_amt'] = format(int(accountBalance['balance_amt']), ',')
+                    allBalanceAmt += int(accountBalance['balance_amt'])
                     break
             accountInfoList.append(accountDic)
             idx += 1
+        allBalanceAmt = format(allBalanceAmt, ',')
 
         '''
         # table
          - 각 은행별 입출금 상세 내역
         '''
         idx = 0
+
+        # 모든 카드의 내역을 확인
+        # http://127.0.0.1:8000/open/allAccountTransList
         accountTransList = getAccountTrans()
+        allMonthBalanceAmt = []
+        allMonthUseBalanceAmt = []
+
+        for m in range(0, 12):
+            allMonthBalanceAmt.append(0)
+            allMonthUseBalanceAmt.append(0)
 
         for accountTrans in accountTransList:
-            print(accountTrans["bank_name"])
+            # print(accountTrans["bank_name"])
             accountTrans["bank_idx"] = idx
+            accountTrans["res_list"].reverse()
+
+            monthBalanceAmt = []
+            monthUseBalanceAmt = []
+
+            for m in range(0, 12):
+                monthBalanceAmt.append(0)
+                monthUseBalanceAmt.append(0)
+
+            res_idx = 0
             for res in accountTrans["res_list"]:
-                # res["idx"] = idx
-                # idx += 1
+                res["idx"] = res_idx
 
                 dateandtime = res["tran_date"] + res["tran_time"]
                 dateandtime = datetime.datetime.strptime(dateandtime, '%Y%m%d%H%M%S')
-                res["tran_date"] = res["tran_time"] = dateandtime
+                res["tran_date"] = dateandtime.date()
+                res["tran_time"] = dateandtime.time()
+
+                if monthBalanceAmt[int(dateandtime.date().month)-1] == 0:
+                    monthBalanceAmt[int(dateandtime.date().month)-1] = int(res["after_balance_amt"])
+                    allMonthBalanceAmt[int(dateandtime.date().month)-1] += int(res["after_balance_amt"])
+
+                if res["inout_type"] == '출금':
+                    monthUseBalanceAmt[int(dateandtime.date().month) - 1] += int(res["tran_amt"])
+                    allMonthUseBalanceAmt[int(dateandtime.date().month) - 1] += int(res["tran_amt"])
 
                 res["tran_amt"] = format(int(res["tran_amt"]), ',')
                 res["after_balance_amt"] = format(int(res["after_balance_amt"]), ',')
 
-            print(accountTrans)
+                res_idx += 1
             idx += 1
 
+            for m in range(1, 12):
+                if monthBalanceAmt[m] == 0:
+                    monthBalanceAmt[m] = monthBalanceAmt[m-1]
+            accountTrans["month_balance_amt"] = monthBalanceAmt
+            accountTrans["month_use_balance_amt"] = monthUseBalanceAmt
+
+
+        for m in range(1, 12):
+            if allMonthBalanceAmt[m] == 0:
+                allMonthBalanceAmt[m] = allMonthBalanceAmt[m-1]
+
         return render(request, 'index.html',
-                          {'accountInfoList': accountInfoList, 'accountTransList': accountTransList})
-    except KeyError:
-        return render(request, 'error.html')
-
-def detail(request, bank_name):
-    '''
-    # table
-     - 은행별 입출금 상세 내역
-    '''
-    try:
-        accountTransList = getAccountTrans()
-        accountDetailTransList = []
-
-        minDate = datetime.datetime.strptime('99991231000000', '%Y%m%d%H%M%S')
-        maxDate = datetime.datetime.strptime('00010101000000', '%Y%m%d%H%M%S')
-
-        cntTrans = 0
-
-        for accountTrans in accountTransList:
-            if accountTrans["bank_name"] == bank_name:
-                cntTrans = len(accountTrans["res_list"])
-                for res in accountTrans["res_list"]:
-                    dateandtime = res["tran_date"] + res["tran_time"]
-                    dateandtime = datetime.datetime.strptime(dateandtime, '%Y%m%d%H%M%S')
-                    res["tran_date"] = res["tran_time"] = dateandtime
-
-                    if minDate > dateandtime:
-                        minDate = dateandtime
-                    elif maxDate < dateandtime:
-                        maxDate = dateandtime
-
-                    res["tran_amt"] = format(int(res["tran_amt"]), ',')
-                    res["after_balance_amt"] = format(int(res["after_balance_amt"]), ',')
-                accountDetailTransList = accountTrans
-                break
-        return render(request, 'detail.html', {'bankName': bank_name, 'cntTrans': cntTrans,
-                                               'minDate': minDate, 'maxDate': maxDate, 'accountDetailTransList': accountDetailTransList})
+                          {'accountInfoList': accountInfoList, 'accountTransList': accountTransList,
+                           'allBalanceAmt': allBalanceAmt, 'allMonthBalanceAmt':allMonthBalanceAmt, 'allMonthUseBalanceAmt':allMonthUseBalanceAmt })
     except KeyError:
         return render(request, 'error.html')
 
 def login(request):
-    return render(request, 'ui-tables.html')
-
+    return render(request, 'charts-morris.html')
 
 

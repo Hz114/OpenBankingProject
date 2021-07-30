@@ -3,7 +3,7 @@
 
 <head>
     <title>
-        Django Datta Able - {% block title %}{% endblock %} | AppSeed
+        {% block title %}{% endblock %}
     </title>
     <!-- HTML5 Shim and Respond.js IE10 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -29,6 +29,16 @@
     <link rel="stylesheet" href="/static/assets/plugins/animation/css/animate.min.css">
     <!-- vendor css -->
     <link rel="stylesheet" href="/static/assets/css/style.css">
+
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang&display=swap" rel="stylesheet">
+    <style>
+        .gb-font{
+            font-family: 'Gowun Batang', serif;
+        }
+    </style>
 
     <!-- Specific CSS goes HERE -->
     {% block stylesheets %}{% endblock stylesheets %}
