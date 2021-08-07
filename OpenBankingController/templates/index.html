@@ -38,7 +38,7 @@
           <!--[ card section ] end-->
 
           <div class="col-xl-12 col-md-12 m-b-30">
-            <h5 class="mt-4">은행별 지출내역</h5>
+            <h5 class="mt-4">은행별 거래내역</h5>
             <hr>
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
               {% for account in accountInfoList %}
@@ -63,7 +63,10 @@
               <div class="tab-pane fade" id="{{accountTrans.bank_name}}" role="tabpanel" aria-labelledby="{{accountTrans.bank_name}}-tab">
               {% endif %}
 
-                <canvas class="mb-5" id="myChart{{accountTrans.bank_name}}" height="100"></canvas>
+                <div>
+                <canvas id="myChart{{accountTrans.bank_name}}" height="100"></canvas>
+                </div>
+                </br>
                 <script>
                 var ctx = document.getElementById('myChart{{accountTrans.bank_name}}').getContext('2d');
                 var myChart{{accountTrans.bank_name}} = new Chart(ctx, {
@@ -71,7 +74,7 @@
                     data: {
                         labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
                         datasets: [{
-                            label: '모든 계좌의 월별 사용금액',
+                            label: '모든 계좌의 월별 지출금액',
                             data: [
                             {% for all_month_use_balance_amt in allMonthUseBalanceAmt %}
                               {{all_month_use_balance_amt}},
@@ -82,7 +85,7 @@
                             borderWidth: 0.5
                         },
                         {
-                            label: '{{accountTrans.bank_name}}의 월별 사용금액',
+                            label: '{{accountTrans.bank_name}}의 월별 지출금액',
                             data: [
                             {% for month_use_balance_amt in accountTrans.month_use_balance_amt %}
                               {{month_use_balance_amt}},
@@ -173,9 +176,5 @@
 
   <!-- Specific Page JS goes HERE  -->
   {% block javascripts %}
-
-  <script src="/static/assets/plugins/chart-morris/js/raphael.min.js"></script>
-  <script src="/static/assets/plugins/chart-morris/js/morris.min.js"></script>
-  <script src="/static/assets/js/pages/chart-morris-custom.js"></script>
 
   {% endblock javascripts %}

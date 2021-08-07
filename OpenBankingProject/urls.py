@@ -21,6 +21,7 @@ from OpenBankingController import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
+    path('chart/', views.chart, name='chart'),
     path('login/', views.login, name='login'),
     path('open/', include('OpenBankingController.urls')),
 ]
