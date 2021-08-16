@@ -43,7 +43,7 @@
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
               {% for account in accountInfoList %}
               <li class="nav-item">
-                {% if  account.bank_idx == 0%}
+                {% if  forloop.counter0 == 0 %}
                 <a class="nav-link active" id="{{account.bank_name}}-tab" data-toggle="pill" href="#{{account.bank_name}}"
                    role="tab" aria-controls="{{account.bank_name}}" aria-selected="false">
                   {{ account.bank_name }}</a>
@@ -57,17 +57,17 @@
             </ul>
             <div class="tab-content" id="pills-tabContent">
               {% for accountTrans in accountTransList %}
-              {% if  accountTrans.bank_idx == 0%}
+              {% if  forloop.counter0 == 0 %}
               <div class="tab-pane fade show active" id="{{accountTrans.bank_name}}" role="tabpanel" aria-labelledby="{{accountTrans.bank_name}}-tab">
-              {% else %}
-              <div class="tab-pane fade" id="{{accountTrans.bank_name}}" role="tabpanel" aria-labelledby="{{accountTrans.bank_name}}-tab">
-              {% endif %}
+                {% else %}
+                <div class="tab-pane fade" id="{{accountTrans.bank_name}}" role="tabpanel" aria-labelledby="{{accountTrans.bank_name}}-tab">
+                  {% endif %}
 
-                <div>
-                <canvas id="myChart{{accountTrans.bank_name}}" height="100"></canvas>
-                </div>
-                </br>
-                <script>
+                  <div class="m-2">
+                    <canvas id="myChart{{accountTrans.bank_name}}" height="100"></canvas>
+                  </div>
+                  </br>
+                  <script>
                 var ctx = document.getElementById('myChart{{accountTrans.bank_name}}').getContext('2d');
                 var myChart{{accountTrans.bank_name}} = new Chart(ctx, {
                     type: 'bar',
@@ -109,38 +109,40 @@
                   <table class="table table-hover">
                     <thead>
                     <tr>
-                      <th>날짜</th>
-                      <th>거래금액</th>
-                      <th>잔액</th>
-                      <th>사용처</th>
-                      <th class="text-right"></th>
+                      <th class="col-3"><center>날짜</center></th>
+                      <th class="col-2"><center>거래금액</center></th>
+                      <th class="col-2"><center>잔액</center></th>
+                      <th class="col-4"><center>사용처</center></th>
+                      <th class="col-1"><center></center></th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for res in accountTrans.res_list %}
                     <tr>
                       <td>
-                        <h6 class="m-0">{{ res.tran_date }} {{ res.tran_time }}</h6>
+                        <h6 class="m-0"><center>{{ res.tran_date }} {{ res.tran_time }}</center></h6>
                       </td>
                       <td>
                         {% if res.inout_type == '입금' %}
-                        <h6 class="m-0 text-c-green">+{{ res.tran_amt }}</h6>
+                        <h6 class="m-0 text-c-green"><center>+{{ res.tran_amt }}</center></h6>
                         {% else %}
-                        <h6 class="m-0 text-c-red ">-{{ res.tran_amt }}</h6>
+                        <h6 class="m-0 text-c-red "><center>-{{ res.tran_amt }}</center></h6>
                         {% endif %}
                       </td>
                       <td>
-                        <h6 class="m-0">{{ res.after_balance_amt }}</h6>
+                        <h6 class="m-0"><center>{{ res.after_balance_amt }}</center></h6>
                       </td>
                       <td>
-                        <h6 class="m-0">{{ res.print_content }}</h6>
+                        <h6 class="m-0"><center>{{ res.print_content }}</center></h6>
                       </td>
                       <td class="text-right">
-                        {% if res.inout_type == '입금' %}
-                        <i class="fas fa-circle text-c-green f-10"></i>
-                        {% else %}
-                        <i class="fas fa-circle text-c-red f-10"></i>
-                        {% endif %}
+                        <center>
+                          {% if res.inout_type == '입금' %}
+                          <i class="fas fa-circle text-c-green f-10"></i>
+                          {% else %}
+                          <i class="fas fa-circle text-c-red f-10"></i>
+                          {% endif %}
+                        </center>
                       </td>
                     </tr>
                     {% endfor %}

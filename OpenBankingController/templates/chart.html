@@ -6,128 +6,144 @@
 {% block stylesheets %}{% endblock stylesheets %}
 
 {% block content %}
-            <!-- [ breadcrumb ] end -->
-            <div class="main-body">
-                <div class="page-wrapper">
-                    <!-- [ Main Content ] start -->
-                    <div class="row">
-                        {% for accountTrans in accountTransList %}
-                          {% if accountTrans.res_out_idx != 0 %}
-                              <div class="col-xl-10 col-md-10 m-2 ml-5">
-                                <h5 class="mt-4"><b>{{accountTrans.bank_name}} 소비패턴 분석</b></h5>
-                              </div>
-                              <div class="col-md-5 col-xl-4 ml-5">
-                                  <div class="card daily-sales">
-                                      <div class="card-block">
-                                        <canvas id="doughnut-chart-{{accountTrans.bank_name}}" width="400"></canvas>
-                                        <script>
-                                          new Chart(document.getElementById("doughnut-chart-{{accountTrans.bank_name}}"), {
-                                            type: 'doughnut',
-                                            data: {
-                                              labels: [
-                                              {% for category in accountTrans.count_account_category %}
-                                                '{{category}}',
-                                               {% endfor %}
-                                               ],
-                                              datasets: [
-                                                {
-                                                  label: "Population (millions)",
-                                                  backgroundColor: [
-                                                    'rgba(255, 99, 132, 0.2)',
-                                                    'rgba(255, 159, 64, 0.2)',
-                                                    'rgba(255, 205, 86, 0.2)',
-                                                    'rgba(75, 192, 192, 0.2)',
-                                                    'rgba(54, 162, 235, 0.2)',
-                                                    'rgba(153, 102, 255, 0.2)',
-                                                    'rgba(201, 203, 207, 0.2)'
-                                                  ],
-                                                  data: [
-                                                  {% for category, value in accountTrans.count_account_category.items %}
-                                                    {{ value }},
-                                                  {% endfor %}]
-                                                }
-                                              ]
-                                            },
-                                            options: {
-                                              title: {
-                                                display: true,
-                                                text: 'Predicted world population (millions) in 2050'
-                                              }
-                                            }
-                                        });
-                                        </script>
-                                      </div>
-                                  </div>
-                              </div>
-                              <!--[ daily sales section ] end-->
+<!-- [ breadcrumb ] end -->
+<div class="main-body">
+  <div class="page-wrapper">
+    <!-- [ Main Content ] start -->
+    <div class="row">
+      {% for accountTrans in accountTransList %}
+      {% if accountTrans.res_out_idx != 0 %}
+      <!--
+      <div class="col-xl-10 col-md-10 m-2 ml-5 mb-2">
+        <h5 class="mt-4"><b>{{accountTrans.bank_name}} 소비패턴 분석</b></h5>
+      </div>
+      -->
+      <div class="col-xl-7 col-md-6 ml-5 mt-5">
+        <div class="row">
+          <div class="col-md-3 col-sm-12">
+            <div class="card card-event">
+              <div class="card-block">
+                <div class="row align-items-center justify-content-center">
+                  <div class="col">
+                    <h5 class="m-0"><b><center>{{ accountTrans.bank_name }} 소비패턴</center></b></h5>
 
-
-                              <div class="col-xl-7 col-md-6">
-                                    <div class="row">
-                                        <div class="col-md-3 col-sm-12">
-                                            <ul class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                                              {% for category in accountTrans.tabs_account_category_idx %}
-                                                {% if  forloop.counter0 == 0%}
-                                                <li><a class="nav-link text-left active" id="v-pills-{{accountTrans.bank_name}}-{{category}}-tab" data-toggle="pill"
-                                                       href="#v-pills-{{accountTrans.bank_name}}-{{category}}" role="tab" aria-controls="v-pills-{{accountTrans.bank_name}}-{{category}}" aria-selected="true">
-                                                        {{category}}</a></li>
-                                                {% else %}
-                                                <li><a class="nav-link text-left" id="v-pills-{{accountTrans.bank_name}}-{{category}}-tab" data-toggle="pill"
-                                                       href="#v-pills-{{accountTrans.bank_name}}-{{category}}" role="tab" aria-controls="v-pills-{{accountTrans.bank_name}}-{{category}}" aria-selected="true">
-                                                        {{category}}</a></li>
-                                                {% endif %}
-                                              {% endfor %}
-                                              </li>
-                                            </ul>
-                                        </div>
-                                        <div class="col-md-9 col-sm-12">
-                                            <div class="tab-content" id="v-pills-tabContent">
-                                              {% for category in accountTrans.tabs_account_category_idx %}
-                                                {% if  forloop.counter0 == 0%}
-                                                <div class="tab-pane fade show active" id="v-pills-{{accountTrans.bank_name}}-{{category}}" role="tabpanel" aria-labelledby="v-pills-{{accountTrans.bank_name}}-{{category}}-tab">
-                                                {% else %}
-                                                <div class="tab-pane fade" id="v-pills-{{accountTrans.bank_name}}-{{category}}" role="tabpanel" aria-labelledby="v-pills-{{accountTrans.bank_name}}-{{category}}-tab">
-                                                {% endif %}
-                                                 <p class="mb-0">{{accountTrans.bank_name}} {{category}}, {{forloop.counter0}}</p>
-                                                <table class="table table-hover">
-                                                  <thead>
-                                                  <tr>
-                                                    <th class="col-4"><center>날짜</center></th>
-                                                    <th class="col-4"><center>거래금액</center></th>
-                                                    <th class="col-4"><center>사용처</center></th>
-                                                  </tr>
-                                                  </thead>
-                                                  <tbody>
-                                                  {% for res in accountTrans.res_list %}
-                                                  <tr>
-                                                    <td>
-                                                      <h6 class="m-0"><center>{{ res.tran_date }}</center></h6>
-                                                    </td>
-                                                    <td>
-                                                      <h6 class="m-0 text-c-red "><center>-{{ res.tran_amt }}</center></h6>
-                                                    </td>
-
-                                                    <td>
-                                                      <h6 class="m-0"><center>{{ res.print_content }}</center></h6>
-                                                    </td>
-                                                  </tr>
-                                                  {% endfor %}
-                                                  </tbody>
-                                                </table>
-
-                                                </div>
-                                              {% endfor %}
-                                            </div>
-                                        </div>
-                                    </div>
-                              </div>
-                          {% endif %}
-                        {% endfor %}
-                    </div>
+                  </div>
                 </div>
+              </div>
             </div>
+            <ul class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+              {% for category in accountTrans.count_account_category %}
+              {% if  forloop.counter0 == 0%}
+              <li><a class="nav-link text-left active" id="v-pills-{{accountTrans.bank_name}}-{{category}}-tab" data-toggle="pill"
+                     href="#v-pills-{{accountTrans.bank_name}}-{{category}}" role="tab" aria-controls="v-pills-{{accountTrans.bank_name}}-{{category}}" aria-selected="true">
+                {{category}}</a></li>
+              {% else %}
+              <li><a class="nav-link text-left" id="v-pills-{{accountTrans.bank_name}}-{{category}}-tab" data-toggle="pill"
+                     href="#v-pills-{{accountTrans.bank_name}}-{{category}}" role="tab" aria-controls="v-pills-{{accountTrans.bank_name}}-{{category}}" aria-selected="true">
+                {{category}}</a></li>
+              {% endif %}
+              {% endfor %}
+              </li>
+            </ul>
+          </div>
+
+          <div class="col-md-9 col-sm-12">
+            <div class="tab-content" id="v-pills-tabContent">
+              {% for category in accountTrans.count_account_category %}
+              {% if  forloop.counter0 == 0%}
+              <div class="tab-pane fade show active" id="v-pills-{{accountTrans.bank_name}}-{{category}}" role="tabpanel" aria-labelledby="v-pills-{{accountTrans.bank_name}}-{{category}}-tab">
+                {% else %}
+                <div class="tab-pane fade" id="v-pills-{{accountTrans.bank_name}}-{{category}}" role="tabpanel" aria-labelledby="v-pills-{{accountTrans.bank_name}}-{{category}}-tab">
+                  {% endif %}
+                  <table class="table table-hover">
+                    <thead>
+                    <tr>
+                      <th class="col-4"><center>날짜</center></th>
+                      <th class="col-4"><center>거래금액</center></th>
+                      <th class="col-4"><center>사용처</center></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for content_key, content_value in accountTrans.account_category_content.items %}
+                      {% if  category == content_key %}
+                        {% for content_res in content_value %}
+                        <tr>
+                          <td>
+                            <h6 class="m-0"><center>{{ content_res.tran_date}} {{ content_res.tran_time}}</center></h6>
+                          </td>
+                          <td>
+                            <h6 class="m-0 text-c-red "><center>-{{ content_res.tran_amt }}</center></h6>
+                          </td>
+
+                          <td>
+                            <h6 class="m-0"><center>{{ content_res.print_content }}</center></h6>
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}
+                    </tbody>
+                  </table>
+
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
         </div>
+        <!-- 차트 -->
+        <div class="col-md-5 col-xl-4 mt-5">
+          <div class="card daily-sales">
+            <div class="card-block">
+              <canvas id="doughnut-chart-{{accountTrans.bank_name}}" width="400"></canvas>
+              <script>
+                new Chart(document.getElementById("doughnut-chart-{{accountTrans.bank_name}}"), {
+                  type: 'doughnut',
+                  data: {
+                    labels: [
+                    {% for category in accountTrans.count_account_category %}
+                      '{{category}}',
+                     {% endfor %}
+                     ],
+                    datasets: [
+                      {
+                        label: "Population (millions)",
+                        backgroundColor: [
+                          'rgba(153, 102, 255, 0.2)',
+                          'rgba(54, 162, 235, 0.2)',
+                          'rgba(75, 192, 192, 0.2)',
+                          'rgba(255, 205, 86, 0.2)',
+                          'rgba(255, 159, 64, 0.2)',
+                          'rgba(201, 203, 207, 0.2)',
+                          'rgba(255, 99, 132, 0.2)',
+
+                        ],
+                        data: [
+                        {% for category, value in accountTrans.count_account_category.items %}
+                          {{ value }},
+                        {% endfor %}]
+                      }
+                    ]
+                  },
+                  options: {
+                    title: {
+                      display: true,
+                      text: 'Predicted world population (millions) in 2050'
+                    }
+                  }
+              });
+              </script>
+            </div>
+          </div>
+        </div>
+        <!--[ daily sales section ] end-->
+        {% endif %}
+        {% endfor %}
+      </div>
     </div>
+  </div>
+</div>
+
 
 {% endblock content %}
 

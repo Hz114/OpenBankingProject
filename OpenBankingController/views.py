@@ -221,17 +221,12 @@ def getMonthlyWithdrawl(request, self=None):
         print(type(MonthlyWithdrrawlList))
         return Response(MonthlyWithdrrawlList)
 
-
-# Create your views here.
-
-
 def getUserAccountInfo():
     apiURL = "https://developers.kftc.or.kr/proxy/user/me"
     result = OpenBankingControllerView.goconnection(apiURL)
     jsonresult = json.dumps(result)
     jsonObject = json.loads(jsonresult)
     return jsonObject
-
 
 def getAccountBalanceAmt(self=None):
     result = getAllAcountTransactionList.getallaccounttransactionlist(self)
@@ -270,11 +265,9 @@ def index(request):
         # http://127.0.0.1:8000/open/allAccountBalanceAmt
         userAccountBalance = getAccountBalanceAmt()
 
-        idx = 0
         allBalanceAmt = 0
         for accountInfo in userAccountInfo['res_list']:
             accountDic = {}
-            accountDic['bank_idx'] = idx
             accountDic['bank_name'] = accountInfo['bank_name']
             accountDic['account_num_masked'] = accountInfo['account_num_masked']
 
@@ -284,14 +277,13 @@ def index(request):
                     allBalanceAmt += int(accountBalance['balance_amt'])
                     break
             accountInfoList.append(accountDic)
-            idx += 1
         allBalanceAmt = format(allBalanceAmt, ',')
 
         '''
         # table
          - 각 은행별 입출금 상세 내역
         '''
-        idx = 0
+
 
         # 모든 카드의 내역을 확인
         # http://127.0.0.1:8000/open/allAccountTransList
@@ -305,7 +297,6 @@ def index(request):
 
         for accountTrans in accountTransList:
             # print(accountTrans["bank_name"])
-            accountTrans["bank_idx"] = idx
             accountTrans["res_list"].reverse()
 
             monthBalanceAmt = []
@@ -315,10 +306,7 @@ def index(request):
                 monthBalanceAmt.append(0)
                 monthUseBalanceAmt.append(0)
 
-            res_idx = 0
             for res in accountTrans["res_list"]:
-                res["idx"] = res_idx
-
                 dateandtime = res["tran_date"] + res["tran_time"]
                 dateandtime = datetime.datetime.strptime(dateandtime, '%Y%m%d%H%M%S')
                 res["tran_date"] = dateandtime.date()
@@ -334,9 +322,6 @@ def index(request):
 
                 res["tran_amt"] = format(int(res["tran_amt"]), ',')
                 res["after_balance_amt"] = format(int(res["after_balance_amt"]), ',')
-
-                res_idx += 1
-            idx += 1
 
             for m in range(1, 12):
                 if monthBalanceAmt[m] == 0:
@@ -401,17 +386,14 @@ def chart(request):
         '의류잡화': 0,
         '건강비': 0
     }
-    count_all_content = {}
+    # count_all_content = {}
 
     # 모든 카드의 내역을 확인
     # http://127.0.0.1:8000/open/allAccountTransList
     accountTransList = getAccountTrans()
-    idx = 0
 
     for accountTrans in accountTransList:
         print('-' + accountTrans["bank_name"])
-        accountTrans["bank_idx"] = idx
-
         count_account_category = {
             '카페': 0,
             '식비': 0,
@@ -431,13 +413,11 @@ def chart(request):
             '의류잡화': 0,
             '건강비': 0
         }
-        count_account_content = {}
+        account_category_content = {}
 
-        res_idx = 0
         res_out_idx = 0
         for res in accountTrans["res_list"]:
             res["category"] = ''
-            res["idx"] = res_idx
 
             dateandtime = res["tran_date"] + res["tran_time"]
             dateandtime = datetime.datetime.strptime(dateandtime, '%Y%m%d%H%M%S')
@@ -446,7 +426,6 @@ def chart(request):
 
             if res["inout_type"] == '출금':
                 res_out_idx += 1
-                # print('#' + res["print_content"])
                 for key in category.keys():
                     for value in category[key]:
                         if value in res["print_content"]:
@@ -454,7 +433,19 @@ def chart(request):
                             count_all_category[key] += 1
                             count_account_category[key] += 1
 
+                            try:
+                                account_category_content[key].append({"tran_date": res["tran_date"],
+                                                                      "tran_time": res["tran_time"],
+                                                                      "print_content": res["print_content"],
+                                                                      "tran_amt": format(int(res["tran_amt"]), ',')})
+                            except:
+                                account_category_content[key] = []
+                                account_category_content[key].append({  "tran_date" : res["tran_date"],
+                                                                        "tran_time" : res["tran_time"],
+                                                                        "print_content" : res["print_content"],
+                                                                        "tran_amt": format(int(res["tran_amt"]), ',')})
                             # 템플릿 언어에서 처리불가능 이름을 변경하든지 해야함
+                            '''
                             try:
                                 count_account_content[key + '-' + res["print_content"]] += 1
                             except:
@@ -463,12 +454,10 @@ def chart(request):
                                 count_all_content[key + '-' + res["print_content"]] += 1
                             except:
                                 count_all_content[key + '-' + res["print_content"]] = 1
-
+                            '''
                             break
                     if res["category"] == key:
                         break
-
-            res_idx += 1
 
         '''
         카테고리 소비 top5 찾기
@@ -477,6 +466,11 @@ def chart(request):
         count_account_category = dict(
             islice(sorted(count_account_category.items(), key=lambda x: x[1], reverse=True), 5))
 
+        
+        '''
+        top 5 제외한 값 정보 추가
+        위에서 islice하면 없어짐해결방안 생각
+        '''
         # count top 5
         top5_idx = 0
         del_category_list = []
@@ -494,19 +488,11 @@ def chart(request):
         for del_category in del_category_list:
             del count_account_category[del_category]
 
-        category_idx = 0
-        tabs_account_category_idx = {}
-        for key in count_account_category:
-            tabs_account_category_idx[key] = category_idx
-            category_idx += 1
-
-        print(tabs_account_category_idx)
+        print(account_category_content)
 
         accountTrans['count_account_category'] = count_account_category
-        accountTrans['tabs_account_category_idx'] = tabs_account_category_idx
-
         accountTrans['res_out_idx'] = res_out_idx
-        accountTrans['count_account_content'] = count_account_content
+        accountTrans['account_category_content'] = account_category_content
 
         '''
         print(count_account_category)
@@ -534,6 +520,6 @@ def register(request):
 
 def authResetPass(request):
     print('OpenBankingPController view.py - def authResetPass')
-    return render(request, 'ui-tabs.html')
+    return render(request, 'index-base.html')
     # return render(request, 'auth-reset-pass.html')
 
