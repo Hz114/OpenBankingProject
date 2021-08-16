@@ -18,6 +18,8 @@ import os
 from pathlib import Path
 
 import datetime
+from itertools import islice
+
 
 # hide API KEY
 
@@ -402,7 +404,7 @@ def chart(request):
     idx = 0
 
     for accountTrans in accountTransList:
-        print(accountTrans["bank_name"])
+        print('-' + accountTrans["bank_name"])
         accountTrans["bank_idx"] = idx
 
         count_account_category = {
@@ -427,6 +429,7 @@ def chart(request):
         count_account_content = {}
 
         res_idx = 0
+        res_out_idx = 0
         for res in accountTrans["res_list"]:
             res["category"] = ''
             res["idx"] = res_idx
@@ -437,6 +440,8 @@ def chart(request):
             res["tran_time"] = dateandtime.time()
 
             if res["inout_type"] == '출금':
+                res_out_idx += 1
+                #print('#' + res["print_content"])
                 for key in category.keys():
                     for value in category[key]:
                         if value in res["print_content"]:
@@ -444,12 +449,11 @@ def chart(request):
                             count_all_category[key] += 1
                             count_account_category[key] += 1
 
-
+                            # 템플릿 언어에서 처리불가능 이름을 변경하든지 해야함
                             try:
                                 count_account_content[key + '-' + res["print_content"]] += 1
                             except:
                                 count_account_content[key+'-'+res["print_content"]] = 1
-
                             try:
                                 count_all_content[key+'-'+res["print_content"]] += 1
                             except:
@@ -461,17 +465,69 @@ def chart(request):
 
             res_idx += 1
 
-        accountTrans['count_account_category'] = count_account_category
-        print(accountTrans['count_account_category'])
-        print(count_account_content)
+        '''
+        카테고리 소비 top5 찾기
+        '''
 
+        count_account_category = dict(islice(sorted(count_account_category.items(), key=lambda x: x[1], reverse=True), 5))
+
+        # count top 5
+        top5_idx = 0
+        # 만약 top5안에 사용횟수가 0인 카테고리 제거 리스트 생성
+        del_category_list = []
+        for key, value in count_account_category.items():
+            if count_account_category[key] == 0:
+                del_category_list.append(key)
+            else:
+                top5_idx += value
+                # 이렇게 할 경우 건수를 못 구한다
+                #count_account_category[key] = format(value/res_out_idx, ".2f")
+                count_account_category[key] = value
+                #count_account_category[key] = int((value / res_out_idx) * 100)
+
+        if res_out_idx > top5_idx:
+            #count_account_category['기타'] = format(1 - top5_idx/res_out_idx, ".2f")
+            count_account_category['기타'] = res_out_idx - top5_idx
+            #count_account_category['기타'] = int((1 - top5_idx / res_out_idx) * 100)
+
+        # 리스트 안의 값을 제거
+        for del_category in del_category_list:
+            del count_account_category[del_category]
+
+
+        for cate in count_account_category:
+            print(count_account_category[cate])
+
+        accountTrans['count_account_category'] = count_account_category
+        accountTrans['res_out_idx'] = res_out_idx
+        accountTrans['count_account_content'] = count_account_content
+
+        for cate in accountTrans['count_account_category']:
+            print(accountTrans['count_account_category'][cate])
+
+        '''
+        print(count_account_category)
+        print(count_account_content)
+        '''
+
+    count_all_category = dict(sorted(count_all_category.items(), key=lambda x: x[1], reverse=True))
+    '''
     print(count_all_category)
     print(count_all_content)
-
-    return render(request, 'ui-badges.html')
+    '''
+    return render(request, 'chart.html',
+                  {'accountTransList': accountTransList})
 
 def login(request):
     print('OpenBankingPController view.py - def login')
-    return render(request, 'index-base.html')
+    return render(request, 'login.html')
 
+def register(request):
+    print('OpenBankingPController view.py - def register')
+    return render(request, 'register.html')
+
+def authResetPass(request):
+    print('OpenBankingPController view.py - def authResetPass')
+    return render(request, 'ui-tabs.html')
+    #return render(request, 'auth-reset-pass.html')
 

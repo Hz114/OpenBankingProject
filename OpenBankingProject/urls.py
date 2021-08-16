@@ -23,5 +23,7 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('chart/', views.chart, name='chart'),
     path('login/', views.login, name='login'),
+    path('register/', views.register, name='register'),
+    path('authResetPass/', views.authResetPass, name='authResetPass'),
     path('open/', include('OpenBankingController.urls')),
 ]
