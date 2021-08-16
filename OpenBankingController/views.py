@@ -20,7 +20,6 @@ from pathlib import Path
 import datetime
 from itertools import islice
 
-
 # hide API KEY
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -84,7 +83,7 @@ class getAllAcountList:  # dict로 반환
             accountList["bank_name"].append(items["bank_name"])
 
         accountList = dict(accountList)
-        #print(accountList)
+        # print(accountList)
 
         return accountList
 
@@ -128,7 +127,6 @@ class getAllAcountTransactionList:
             bankTranList = {}
             bankResList = []
 
-            
             bank_name = jsonTranObject["bank_name"]
             balance_amt = jsonTranObject["balance_amt"]
             bankTranList["bank_name"] = bank_name
@@ -185,16 +183,15 @@ def getBalanceAmt(request, self=None):
 
         jsonArray = result
 
-
         balanceAmtlist = []
 
         for items in jsonArray:
-         balanceAmtdict = {}
-         bankName = items["bank_name"]
-         balanceAmt = items["balance_amt"]
-         balanceAmtdict["bank_name"] = bankName
-         balanceAmtdict["balance_amt"] = balanceAmt
-         balanceAmtlist.append(balanceAmtdict)
+            balanceAmtdict = {}
+            bankName = items["bank_name"]
+            balanceAmt = items["balance_amt"]
+            balanceAmtdict["bank_name"] = bankName
+            balanceAmtdict["balance_amt"] = balanceAmt
+            balanceAmtlist.append(balanceAmtdict)
 
     return Response(balanceAmtlist)
 
@@ -224,6 +221,7 @@ def getMonthlyWithdrawl(request, self=None):
         print(type(MonthlyWithdrrawlList))
         return Response(MonthlyWithdrrawlList)
 
+
 # Create your views here.
 
 
@@ -233,6 +231,7 @@ def getUserAccountInfo():
     jsonresult = json.dumps(result)
     jsonObject = json.loads(jsonresult)
     return jsonObject
+
 
 def getAccountBalanceAmt(self=None):
     result = getAllAcountTransactionList.getallaccounttransactionlist(self)
@@ -247,6 +246,7 @@ def getAccountBalanceAmt(self=None):
         balanceAmtdict["balance_amt"] = balanceAmt
         balanceAmtlist.append(balanceAmtdict)
     return balanceAmtlist
+
 
 def getAccountTrans(self=None):
     result = getAllAcountTransactionList.getallaccounttransactionlist(self)
@@ -324,9 +324,9 @@ def index(request):
                 res["tran_date"] = dateandtime.date()
                 res["tran_time"] = dateandtime.time()
 
-                if monthBalanceAmt[int(dateandtime.date().month)-1] == 0:
-                    monthBalanceAmt[int(dateandtime.date().month)-1] = int(res["after_balance_amt"])
-                    allMonthBalanceAmt[int(dateandtime.date().month)-1] += int(res["after_balance_amt"])
+                if monthBalanceAmt[int(dateandtime.date().month) - 1] == 0:
+                    monthBalanceAmt[int(dateandtime.date().month) - 1] = int(res["after_balance_amt"])
+                    allMonthBalanceAmt[int(dateandtime.date().month) - 1] += int(res["after_balance_amt"])
 
                 if res["inout_type"] == '출금':
                     monthUseBalanceAmt[int(dateandtime.date().month) - 1] += int(res["tran_amt"])
@@ -340,18 +340,18 @@ def index(request):
 
             for m in range(1, 12):
                 if monthBalanceAmt[m] == 0:
-                    monthBalanceAmt[m] = monthBalanceAmt[m-1]
+                    monthBalanceAmt[m] = monthBalanceAmt[m - 1]
             accountTrans["month_balance_amt"] = monthBalanceAmt
             accountTrans["month_use_balance_amt"] = monthUseBalanceAmt
 
-
         for m in range(1, 12):
             if allMonthBalanceAmt[m] == 0:
-                allMonthBalanceAmt[m] = allMonthBalanceAmt[m-1]
+                allMonthBalanceAmt[m] = allMonthBalanceAmt[m - 1]
 
         return render(request, 'index.html',
-                          {'accountInfoList': accountInfoList, 'accountTransList': accountTransList,
-                           'allBalanceAmt': allBalanceAmt, 'allMonthBalanceAmt':allMonthBalanceAmt, 'allMonthUseBalanceAmt':allMonthUseBalanceAmt })
+                      {'accountInfoList': accountInfoList, 'accountTransList': accountTransList,
+                       'allBalanceAmt': allBalanceAmt, 'allMonthBalanceAmt': allMonthBalanceAmt,
+                       'allMonthUseBalanceAmt': allMonthUseBalanceAmt})
     except KeyError:
         return render(request, 'error.html')
 
@@ -359,41 +359,46 @@ def index(request):
 def chart(request):
     print('OpenBankingPController view.py - def chart')
     category = {
-        '카페' : ['커피','카페', '케이크', '제과','다방','케익','케잌', '빵','베이커리','스타벅스','투썸플레이스','카페베네','이디야','엔젤리너스',	'빌리앤젤','커피빈','파스꾸찌','할리스','요거프레소'],
-        '식비' : ['떡볶이','한정식','주점','갈비','칵테일','막걸리','포차','삼겹','초밥','파자','곱창','닭발','돈까스','김밥',	'맘스터치','롯데리아','맥도날드','분식','우아한형제들','치킨','BHC','교촌','포장마차','식당','구내','호떡', '푸드'],
-        '편의점' : ['GS25', '세븐일레븐', 'CU', '미니스톱', '이마트24','편의점'],
-        '교통비' : ['택시' ,'KTX','버스', '지하철'],
-        '온라인쇼핑' : ['네이버페이','카카오페이', '쿠팡', '11번가', '티몬','토스'],
-        '여행/숙박' :  ['에어', '숙소', '펜션','항공', '비행', '기념', '호텔', '모텔', '해외결제'],
-        '주거/생활비' : ['월세', '마트', '공과금', '오늘의집', '가구'],
-        '통신비' : ['SKT','KT', 'U+'],
-        '금융비' : ['주식','학자금', '수수료', '대출'],
-        '경조사비' : ['혼례', '장례', '결혼', '축의금', '조의금', '꽃', '화원'],
-        '교육비' :  ['등록금', '해커스', '독서실', '스터디', '시험', '원서'],
-        '문화비' :  ['CGV', '메가박스', '롯데시네마', 'APPLE', 'NETFLIX', '멜론', '티빙', '왓챠', 'wave', 'VIBE', '지니뮤직', '소리바다', '연극', '뮤지컬', '콘서트', '인터파크'],
-        '여가/취미/레저비' : ['합기도', '헬스', '짐', 'GYM', '골프' ,'수상','낚시', 'PC', '노래', '피아노', '펜싱', '방탈출', '보컬', '기타', '댄스', '발레', '요가', '필라테스'],
-        '문구/디지털/가전' : ['다이소', '컴퓨터', '교보문고', '알라딘', '알파', '삼성', 'LG', '완구','인쇄', '소니', '아이리버', '플레이스테이션'],
-        '미용/뷰티' : ['올리브영', '미용', '헤어', '랄라블라', '오렌즈', '렌즈미', '네일', '피부', '왁싱'],
-        '의류/패션/잡화' : ['옷', '다비치안경', '쥬얼리', '스파오','탑텐', '유니클로','샵', '몰', '액세서리', 'OST', '백화점', '의류',  '나이키', '아디다스', '상품권', '시계'],
-        '건강비' : ['병원', '의원', '치과', '약국', '의료', '건강', '마스크']
+        '카페': ['커피', '카페', '케이크', '제과', '다방', '케익', '케잌', '빵', '베이커리', '스타벅스', '투썸플레이스', '카페베네', '이디야', '엔젤리너스', '빌리앤젤',
+               '커피빈', '파스꾸찌', '할리스', '요거프레소'],
+        '식비': ['떡볶이', '한정식', '주점', '갈비', '칵테일', '막걸리', '포차', '삼겹', '초밥', '파자', '곱창', '닭발', '돈까스', '김밥', '맘스터치', '롯데리아',
+               '맥도날드', '분식', '우아한형제들', '치킨', 'BHC', '교촌', '포장마차', '식당', '구내', '호떡', '푸드'],
+        '편의점': ['GS25', '세븐일레븐', 'CU', '미니스톱', '이마트24', '편의점'],
+        '교통비': ['택시', 'KTX', '버스', '지하철'],
+        '온라인쇼핑': ['네이버페이', '카카오페이', '쿠팡', '11번가', '티몬', '토스'],
+        '여행비': ['에어', '숙소', '펜션', '항공', '비행', '기념', '호텔', '모텔', '해외결제'],
+        '생활비': ['월세', '마트', '공과금', '오늘의집', '가구'],
+        '통신비': ['SKT', 'KT', 'U+'],
+        '금융비': ['주식', '학자금', '수수료', '대출'],
+        '경조사비': ['혼례', '장례', '결혼', '축의금', '조의금', '꽃', '화원'],
+        '교육비': ['등록금', '해커스', '독서실', '스터디', '시험', '원서'],
+        '문화비': ['CGV', '메가박스', '롯데시네마', 'APPLE', 'NETFLIX', '멜론', '티빙', '왓챠', 'wave', 'VIBE', '지니뮤직', '소리바다', '연극',
+                '뮤지컬', '콘서트', '인터파크'],
+        '여가비': ['합기도', '헬스', '짐', 'GYM', '골프', '수상', '낚시', 'PC', '노래', '피아노', '펜싱', '방탈출', '보컬', '기타', '댄스', '발레', '요가',
+                '필라테스'],
+        '문구가전제품': ['다이소', '컴퓨터', '교보문고', '알라딘', '알파', '삼성', 'LG', '완구', '인쇄', '소니', '아이리버', '플레이스테이션'],
+        '뷰티미용': ['올리브영', '미용', '헤어', '랄라블라', '오렌즈', '렌즈미', '네일', '피부', '왁싱'],
+        '의류잡화': ['옷', '다비치안경', '쥬얼리', '스파오', '탑텐', '유니클로', '샵', '몰', '액세서리', 'OST', '백화점', '의류', '나이키', '아디다스', '상품권',
+                 '시계'],
+        '건강비': ['병원', '의원', '치과', '약국', '의료', '건강', '마스크']
     }
-    count_all_category ={
+    count_all_category = {
         '카페': 0,
         '식비': 0,
         '편의점': 0,
         '교통비': 0,
         '온라인쇼핑': 0,
-        '여행/숙박': 0,
-        '주거/생활비': 0,
+        '여행비': 0,
+        '생홥비': 0,
         '통신비': 0,
         '금융비': 0,
         '경조사비': 0,
         '교육비': 0,
         '문화비': 0,
-        '여가/취미/레저비': 0,
-        '문구/디지털/가전': 0,
-        '미용/뷰티': 0,
-        '의류/패션/잡화': 0,
+        '여가비': 0,
+        '문구가전제품': 0,
+        '뷰티미용': 0,
+        '의류잡화': 0,
         '건강비': 0
     }
     count_all_content = {}
@@ -413,17 +418,17 @@ def chart(request):
             '편의점': 0,
             '교통비': 0,
             '온라인쇼핑': 0,
-            '여행/숙박': 0,
-            '주거/생활비': 0,
+            '여행비': 0,
+            '생홥비': 0,
             '통신비': 0,
             '금융비': 0,
             '경조사비': 0,
             '교육비': 0,
             '문화비': 0,
-            '여가/취미/레저비': 0,
-            '문구/디지털/가전': 0,
-            '미용/뷰티': 0,
-            '의류/패션/잡화': 0,
+            '여가비': 0,
+            '문구가전제품': 0,
+            '뷰티미용': 0,
+            '의류잡화': 0,
             '건강비': 0
         }
         count_account_content = {}
@@ -441,7 +446,7 @@ def chart(request):
 
             if res["inout_type"] == '출금':
                 res_out_idx += 1
-                #print('#' + res["print_content"])
+                # print('#' + res["print_content"])
                 for key in category.keys():
                     for value in category[key]:
                         if value in res["print_content"]:
@@ -453,11 +458,11 @@ def chart(request):
                             try:
                                 count_account_content[key + '-' + res["print_content"]] += 1
                             except:
-                                count_account_content[key+'-'+res["print_content"]] = 1
+                                count_account_content[key + '-' + res["print_content"]] = 1
                             try:
-                                count_all_content[key+'-'+res["print_content"]] += 1
+                                count_all_content[key + '-' + res["print_content"]] += 1
                             except:
-                                count_all_content[key+'-'+res["print_content"]] = 1
+                                count_all_content[key + '-' + res["print_content"]] = 1
 
                             break
                     if res["category"] == key:
@@ -469,41 +474,39 @@ def chart(request):
         카테고리 소비 top5 찾기
         '''
 
-        count_account_category = dict(islice(sorted(count_account_category.items(), key=lambda x: x[1], reverse=True), 5))
+        count_account_category = dict(
+            islice(sorted(count_account_category.items(), key=lambda x: x[1], reverse=True), 5))
 
         # count top 5
         top5_idx = 0
-        # 만약 top5안에 사용횟수가 0인 카테고리 제거 리스트 생성
         del_category_list = []
         for key, value in count_account_category.items():
             if count_account_category[key] == 0:
                 del_category_list.append(key)
             else:
                 top5_idx += value
-                # 이렇게 할 경우 건수를 못 구한다
-                #count_account_category[key] = format(value/res_out_idx, ".2f")
                 count_account_category[key] = value
-                #count_account_category[key] = int((value / res_out_idx) * 100)
 
         if res_out_idx > top5_idx:
-            #count_account_category['기타'] = format(1 - top5_idx/res_out_idx, ".2f")
             count_account_category['기타'] = res_out_idx - top5_idx
-            #count_account_category['기타'] = int((1 - top5_idx / res_out_idx) * 100)
 
         # 리스트 안의 값을 제거
         for del_category in del_category_list:
             del count_account_category[del_category]
 
+        category_idx = 0
+        tabs_account_category_idx = {}
+        for key in count_account_category:
+            tabs_account_category_idx[key] = category_idx
+            category_idx += 1
 
-        for cate in count_account_category:
-            print(count_account_category[cate])
+        print(tabs_account_category_idx)
 
         accountTrans['count_account_category'] = count_account_category
+        accountTrans['tabs_account_category_idx'] = tabs_account_category_idx
+
         accountTrans['res_out_idx'] = res_out_idx
         accountTrans['count_account_content'] = count_account_content
-
-        for cate in accountTrans['count_account_category']:
-            print(accountTrans['count_account_category'][cate])
 
         '''
         print(count_account_category)
@@ -518,16 +521,19 @@ def chart(request):
     return render(request, 'chart.html',
                   {'accountTransList': accountTransList})
 
+
 def login(request):
     print('OpenBankingPController view.py - def login')
     return render(request, 'login.html')
+
 
 def register(request):
     print('OpenBankingPController view.py - def register')
     return render(request, 'register.html')
 
+
 def authResetPass(request):
     print('OpenBankingPController view.py - def authResetPass')
     return render(request, 'ui-tabs.html')
-    #return render(request, 'auth-reset-pass.html')
+    # return render(request, 'auth-reset-pass.html')
 
