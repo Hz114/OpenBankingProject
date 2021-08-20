@@ -20,6 +20,8 @@ from pathlib import Path
 import datetime
 from itertools import islice
 
+from fbprophet import Prophet
+
 # hide API KEY
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -296,9 +298,6 @@ def index(request):
             allMonthUseBalanceAmt.append(0)
 
         for accountTrans in accountTransList:
-            # print(accountTrans["bank_name"])
-            accountTrans["res_list"].reverse()
-
             monthBalanceAmt = []
             monthUseBalanceAmt = []
 
@@ -306,6 +305,7 @@ def index(request):
                 monthBalanceAmt.append(0)
                 monthUseBalanceAmt.append(0)
 
+            accountTrans["res_list"].reverse()
             for res in accountTrans["res_list"]:
                 dateandtime = res["tran_date"] + res["tran_time"]
                 dateandtime = datetime.datetime.strptime(dateandtime, '%Y%m%d%H%M%S')
@@ -392,6 +392,7 @@ def chart(request):
     # http://127.0.0.1:8000/open/allAccountTransList
     accountTransList = getAccountTrans()
 
+    res_list = []
     for accountTrans in accountTransList:
         print('-' + accountTrans["bank_name"])
         count_account_category = {
@@ -415,7 +416,11 @@ def chart(request):
         }
         account_category_content = {}
 
-        res_out_idx = 0
+        res_out_cnt = 0
+
+        accountTrans["res_list"].reverse()
+
+        res_data = []
         for res in accountTrans["res_list"]:
             res["category"] = ''
 
@@ -425,7 +430,9 @@ def chart(request):
             res["tran_time"] = dateandtime.time()
 
             if res["inout_type"] == '출금':
-                res_out_idx += 1
+                res_data.append({"ds":res["tran_date"], "y": -1*int(res["tran_amt"])})
+                res_list.append({"ds":res["tran_date"], "y": -1*int(res["tran_amt"])})
+                res_out_cnt += 1
                 for key in category.keys():
                     for value in category[key]:
                         if value in res["print_content"]:
@@ -444,66 +451,60 @@ def chart(request):
                                                                         "tran_time" : res["tran_time"],
                                                                         "print_content" : res["print_content"],
                                                                         "tran_amt": format(int(res["tran_amt"]), ',')})
-                            # 템플릿 언어에서 처리불가능 이름을 변경하든지 해야함
-                            '''
-                            try:
-                                count_account_content[key + '-' + res["print_content"]] += 1
-                            except:
-                                count_account_content[key + '-' + res["print_content"]] = 1
-                            try:
-                                count_all_content[key + '-' + res["print_content"]] += 1
-                            except:
-                                count_all_content[key + '-' + res["print_content"]] = 1
-                            '''
                             break
                     if res["category"] == key:
                         break
+            else:
+                res_data.append({"ds": res["tran_date"], "y": res["tran_amt"]})
+                res_list.append({"ds": res["tran_date"], "y": res["tran_amt"]})
 
-        '''
-        카테고리 소비 top5 찾기
+        '''    
+        #시간이 너무 오래걸려서 csv 파일 생성
+        res_df = pd.DataFrame(res_data)
+
+        prophet = Prophet(seasonality_mode='multiplicative',
+                          yearly_seasonality=True,
+                          weekly_seasonality=True, daily_seasonality=True,
+                          changepoint_prior_scale=0.5)
+        prophet.fit(res_df)
+
+        future = prophet.make_future_dataframe(periods=5, freq='d')
+        forecast = prophet.predict(future)
+
+        forecast.to_csv("forecast"+accountTrans["bank_name"]+"_30.csv", encoding='utf-8')
         '''
 
-        count_account_category = dict(
-            islice(sorted(count_account_category.items(), key=lambda x: x[1], reverse=True), 5))
+        #accountTrans["forecast"] = forecast
+        #print(accountTrans["forecast"])
+        # 카테고리 소비 top5 찾기
+        # top 5 제외한 값 정보 추가 -위에서 islice하면 없어짐해결방안 생각
+        count_account_category = dict(sorted(count_account_category.items(), key=lambda x: x[1], reverse=True))
+        count_account_category = dict(islice(count_account_category.items(), 5))
 
-        
-        '''
-        top 5 제외한 값 정보 추가
-        위에서 islice하면 없어짐해결방안 생각
-        '''
-        # count top 5
-        top5_idx = 0
+        top5_cnt = 0
         del_category_list = []
         for key, value in count_account_category.items():
             if count_account_category[key] == 0:
                 del_category_list.append(key)
             else:
-                top5_idx += value
+                top5_cnt += value
                 count_account_category[key] = value
 
-        if res_out_idx > top5_idx:
-            count_account_category['기타'] = res_out_idx - top5_idx
+
+        if res_out_cnt > top5_cnt:
+            count_account_category['기타'] = res_out_cnt - top5_cnt
 
         # 리스트 안의 값을 제거
         for del_category in del_category_list:
             del count_account_category[del_category]
 
-        print(account_category_content)
+        # print(account_category_content)
 
         accountTrans['count_account_category'] = count_account_category
-        accountTrans['res_out_idx'] = res_out_idx
+        accountTrans['res_out_cnt'] = res_out_cnt
         accountTrans['account_category_content'] = account_category_content
 
-        '''
-        print(count_account_category)
-        print(count_account_content)
-        '''
 
-    count_all_category = dict(sorted(count_all_category.items(), key=lambda x: x[1], reverse=True))
-    '''
-    print(count_all_category)
-    print(count_all_content)
-    '''
     return render(request, 'chart.html',
                   {'accountTransList': accountTransList})
 
