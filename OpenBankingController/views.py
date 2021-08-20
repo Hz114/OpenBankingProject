@@ -429,9 +429,10 @@ def chart(request):
             res["tran_date"] = dateandtime.date()
             res["tran_time"] = dateandtime.time()
 
+            res_data.append({"ds": res["tran_date"], "y": int(res["after_balance_amt"])})
+            res_list.append({"ds": res["tran_date"], "y": int(res["after_balance_amt"])})
+
             if res["inout_type"] == '출금':
-                res_data.append({"ds":res["tran_date"], "y": -1*int(res["tran_amt"])})
-                res_list.append({"ds":res["tran_date"], "y": -1*int(res["tran_amt"])})
                 res_out_cnt += 1
                 for key in category.keys():
                     for value in category[key]:
@@ -454,11 +455,8 @@ def chart(request):
                             break
                     if res["category"] == key:
                         break
-            else:
-                res_data.append({"ds": res["tran_date"], "y": res["tran_amt"]})
-                res_list.append({"ds": res["tran_date"], "y": res["tran_amt"]})
 
-        '''    
+        '''
         #시간이 너무 오래걸려서 csv 파일 생성
         res_df = pd.DataFrame(res_data)
 
@@ -468,12 +466,20 @@ def chart(request):
                           changepoint_prior_scale=0.5)
         prophet.fit(res_df)
 
-        future = prophet.make_future_dataframe(periods=5, freq='d')
+        future = prophet.make_future_dataframe(periods=30, freq='d')
         forecast = prophet.predict(future)
 
-        forecast.to_csv("forecast"+accountTrans["bank_name"]+"_30.csv", encoding='utf-8')
+        forecast.to_csv("afterBalanceAmt_forecast_"+accountTrans["bank_name"]+"_30.csv", encoding='utf-8')
         '''
+        ######################################
+        
+        path = "./OpenBankingController/static/forecast/afterBalanceAmt_forecast_"+ accountTrans["bank_name"] +"_30.csv"
+        bank_forecast = pd.read_csv(path, sep=',', error_bad_lines=False, warn_bad_lines=False)
+        bank_forecast = pd.DataFrame(bank_forecast)
 
+        print(bank_forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']])
+
+        # forecast_data[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(5)
         #accountTrans["forecast"] = forecast
         #print(accountTrans["forecast"])
         # 카테고리 소비 top5 찾기
@@ -503,7 +509,6 @@ def chart(request):
         accountTrans['count_account_category'] = count_account_category
         accountTrans['res_out_cnt'] = res_out_cnt
         accountTrans['account_category_content'] = account_category_content
-
 
     return render(request, 'chart.html',
                   {'accountTransList': accountTransList})
