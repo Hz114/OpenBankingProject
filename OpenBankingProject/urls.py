@@ -20,9 +20,10 @@ from OpenBankingController import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.index, name='index'),
-    path('chart/', views.chart, name='chart'),
-    path('login/', views.login, name='login'),
+    path('index/', views.index, name='index'),
+    path('analysis/', views.analysis, name='analysis'),
+    path('forecast/', views.forecast, name='forecast'),
+    path('', views.login, name='login'),
     path('register/', views.register, name='register'),
     path('authResetPass/', views.authResetPass, name='authResetPass'),
     path('open/', include('OpenBankingController.urls')),

@@ -21,6 +21,7 @@ import datetime
 from itertools import islice
 
 from fbprophet import Prophet
+import numpy as np
 
 # hide API KEY
 
@@ -341,8 +342,8 @@ def index(request):
         return render(request, 'error.html')
 
 
-def chart(request):
-    print('OpenBankingPController view.py - def chart')
+def analysis(request):
+    print('OpenBankingPController view.py - def analysis')
     category = {
         '카페': ['커피', '카페', '케이크', '제과', '다방', '케익', '케잌', '빵', '베이커리', '스타벅스', '투썸플레이스', '카페베네', '이디야', '엔젤리너스', '빌리앤젤',
                '커피빈', '파스꾸찌', '할리스', '요거프레소'],
@@ -367,32 +368,14 @@ def chart(request):
                  '시계'],
         '건강비': ['병원', '의원', '치과', '약국', '의료', '건강', '마스크']
     }
-    count_all_category = {
-        '카페': 0,
-        '식비': 0,
-        '편의점': 0,
-        '교통비': 0,
-        '온라인쇼핑': 0,
-        '여행비': 0,
-        '생홥비': 0,
-        '통신비': 0,
-        '금융비': 0,
-        '경조사비': 0,
-        '교육비': 0,
-        '문화비': 0,
-        '여가비': 0,
-        '문구가전제품': 0,
-        '뷰티미용': 0,
-        '의류잡화': 0,
-        '건강비': 0
-    }
     # count_all_content = {}
 
     # 모든 카드의 내역을 확인
     # http://127.0.0.1:8000/open/allAccountTransList
     accountTransList = getAccountTrans()
 
-    res_list = []
+    all_res_list = []
+
     for accountTrans in accountTransList:
         print('-' + accountTrans["bank_name"])
         count_account_category = {
@@ -416,11 +399,12 @@ def chart(request):
         }
         account_category_content = {}
 
+        total_tran_amt = 0
         res_out_cnt = 0
-
         accountTrans["res_list"].reverse()
 
-        res_data = []
+        all_res_list.append(accountTrans["res_list"])
+
         for res in accountTrans["res_list"]:
             res["category"] = ''
 
@@ -429,16 +413,13 @@ def chart(request):
             res["tran_date"] = dateandtime.date()
             res["tran_time"] = dateandtime.time()
 
-            res_data.append({"ds": res["tran_date"], "y": int(res["after_balance_amt"])})
-            res_list.append({"ds": res["tran_date"], "y": int(res["after_balance_amt"])})
-
             if res["inout_type"] == '출금':
+                total_tran_amt += int(res["tran_amt"])
                 res_out_cnt += 1
                 for key in category.keys():
                     for value in category[key]:
                         if value in res["print_content"]:
                             res["category"] = key
-                            count_all_category[key] += 1
                             count_account_category[key] += 1
 
                             try:
@@ -456,32 +437,6 @@ def chart(request):
                     if res["category"] == key:
                         break
 
-        '''
-        #시간이 너무 오래걸려서 csv 파일 생성
-        res_df = pd.DataFrame(res_data)
-
-        prophet = Prophet(seasonality_mode='multiplicative',
-                          yearly_seasonality=True,
-                          weekly_seasonality=True, daily_seasonality=True,
-                          changepoint_prior_scale=0.5)
-        prophet.fit(res_df)
-
-        future = prophet.make_future_dataframe(periods=30, freq='d')
-        forecast = prophet.predict(future)
-
-        forecast.to_csv("afterBalanceAmt_forecast_"+accountTrans["bank_name"]+"_30.csv", encoding='utf-8')
-        '''
-        ######################################
-        
-        path = "./OpenBankingController/static/forecast/afterBalanceAmt_forecast_"+ accountTrans["bank_name"] +"_30.csv"
-        bank_forecast = pd.read_csv(path, sep=',', error_bad_lines=False, warn_bad_lines=False)
-        bank_forecast = pd.DataFrame(bank_forecast)
-
-        print(bank_forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']])
-
-        # forecast_data[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(5)
-        #accountTrans["forecast"] = forecast
-        #print(accountTrans["forecast"])
         # 카테고리 소비 top5 찾기
         # top 5 제외한 값 정보 추가 -위에서 islice하면 없어짐해결방안 생각
         count_account_category = dict(sorted(count_account_category.items(), key=lambda x: x[1], reverse=True))
@@ -496,7 +451,6 @@ def chart(request):
                 top5_cnt += value
                 count_account_category[key] = value
 
-
         if res_out_cnt > top5_cnt:
             count_account_category['기타'] = res_out_cnt - top5_cnt
 
@@ -504,15 +458,144 @@ def chart(request):
         for del_category in del_category_list:
             del count_account_category[del_category]
 
-        # print(account_category_content)
-
         accountTrans['count_account_category'] = count_account_category
         accountTrans['res_out_cnt'] = res_out_cnt
         accountTrans['account_category_content'] = account_category_content
+        accountTrans['total_tran_amt'] = format(total_tran_amt, ',')
 
-    return render(request, 'chart.html',
-                  {'accountTransList': accountTransList})
+    #forecast.to_csv("afterBalanceAmt_forecast_" + accountTrans["bank_name"] + "_30.csv", encoding='utf-8')
+    all_res_list =  pd.DataFrame(all_res_list)
+    #all_res_list.to_csv("all_res_list.csv", encoding='utf-8-sig')
 
+    return render(request, 'analysis.html',{'accountTransList': accountTransList})
+
+
+def forecast(request):
+    print('OpenBankingPController view.py - def forecast')
+
+    # 모든 카드의 내역을 확인
+    # http://127.0.0.1:8000/open/allAccountTransList
+    accountTransList = getAccountTrans()
+
+    for accountTrans in accountTransList:
+
+        print("###########"+accountTrans["bank_name"]+"###########")
+
+        accountTrans["res_list"].reverse()
+        afterBalanceAmt_bank_ls = {}
+
+        for res in accountTrans["res_list"]:
+            res["category"] = ''
+
+            dateandtime = res["tran_date"] + res["tran_time"]
+            dateandtime = datetime.datetime.strptime(dateandtime, '%Y%m%d%H%M%S')
+            res["tran_date"] = dateandtime.date()
+            res["tran_time"] = dateandtime.time()
+
+            if res["tran_date"] not in afterBalanceAmt_bank_ls:
+                afterBalanceAmt_bank_ls[res["tran_date"]] = int(res["after_balance_amt"])
+
+        afterBalanceAmt_bank_df = pd.DataFrame.from_dict(afterBalanceAmt_bank_ls, orient='index')
+        afterBalanceAmt_bank_df = afterBalanceAmt_bank_df.rename(columns={0: 'y'})
+
+
+        afterBalanceAmt_bank_df_index = pd.to_datetime(afterBalanceAmt_bank_df.index)
+        afterBalanceAmt_bank_df.set_index(afterBalanceAmt_bank_df_index, inplace=True)
+        afterBalanceAmt_bank_df = afterBalanceAmt_bank_df.resample(rule="M").mean()
+
+        afterBalanceAmt_bank_df_index = afterBalanceAmt_bank_df.index.strftime("%b")
+        afterBalanceAmt_bank_df.set_index(afterBalanceAmt_bank_df_index, inplace=True)
+        afterBalanceAmt_bank_df['month'] = afterBalanceAmt_bank_df.index
+
+        afterBalanceAmt_bank_dic = afterBalanceAmt_bank_df.to_dict('index')
+
+
+        for row_key, row_value in afterBalanceAmt_bank_dic.items():
+            for month_key, month_value in afterBalanceAmt_bank_dic[row_key].items():
+                if month_key == 'month':
+                    continue
+                n = int(int(month_value) / 100) * 100
+                afterBalanceAmt_bank_dic[row_key][month_key] = n
+
+        print(afterBalanceAmt_bank_dic)
+
+        # fbprophet 적용 코드
+        path = "./OpenBankingController/static/forecast/afterBalanceAmt_forecast_"+ accountTrans["bank_name"] +"_30.csv"
+        bank_forecast = pd.read_csv(path, sep=',', error_bad_lines=False, warn_bad_lines=False)
+        bank_forecast = pd.DataFrame(bank_forecast)
+
+        bank_forecast['ds'] = pd.to_datetime(bank_forecast['ds'])
+        bank_forecast.set_index('ds', inplace=True)
+        bank_forecast = bank_forecast[['yhat', 'yhat_lower', 'yhat_upper']]
+
+
+        bank_forecast = bank_forecast.resample(rule="M").mean()
+
+        bank_forecast_index = bank_forecast.index.strftime("%b")
+        bank_forecast.set_index(bank_forecast_index, inplace=True)
+        bank_forecast['month'] = bank_forecast.index
+
+        bank_forecast = bank_forecast.to_dict('index')
+
+        for row_key, row_value in bank_forecast.items():
+            for month_key, month_value in bank_forecast[row_key].items():
+                if month_key == 'month':
+                    continue
+                n = int(int(month_value) / 100) * 100
+                bank_forecast[row_key][month_key] = n
+
+        print(bank_forecast)
+
+        accountTrans['y'] = afterBalanceAmt_bank_dic
+        accountTrans['forecast'] = bank_forecast
+
+
+    return render(request, 'forecast.html', {'accountTransList': accountTransList})
+    '''
+    # fbprophet 적용 코드
+    res_df = pd.DataFrame(res_data)
+
+    prophet = Prophet(seasonality_mode='multiplicative',
+                     yearly_seasonality=True,
+                     weekly_seasonality=True, daily_seasonality=True,
+                     changepoint_prior_scale=0.5)
+    prophet.fit(res_df)
+
+    future = prophet.make_future_dataframe(periods=30, freq='d')
+    forecast = prophet.predict(future)
+
+    forecast.to_csv("afterBalanceAmt_forecast_"+accountTrans["bank_name"]+"_30.csv", encoding='utf-8')
+    '''
+
+    ######################################
+
+    '''
+    #csv파일 실행코드
+    path = "./OpenBankingController/static/forecast/afterBalanceAmt_forecastAll_5.csv"
+    all_forecast = pd.read_csv(path, sep=',', error_bad_lines=False, warn_bad_lines=False)
+    all_forecast = pd.DataFrame(all_forecast)
+
+    all_forecast['ds'] = pd.to_datetime(all_forecast['ds'])
+    all_forecast.set_index('ds',inplace = True)
+    all_forecast = all_forecast[['yhat', 'yhat_lower', 'yhat_upper']]
+    all_forecast = all_forecast.resample(rule="M").mean()
+
+
+    all_forecast_index = all_forecast.index.strftime("%b")
+    all_forecast.set_index(all_forecast_index, inplace=True)
+
+    all_forecast = all_forecast.to_dict('index')
+
+    for month in all_forecast:
+        print(month)
+        for key, value in all_forecast[month].items():
+            n = int(value / 100) * 100
+            all_forecast[month][key] = n
+
+    print(all_forecast)
+
+    return render(request, 'forecast.html',{'accountTransList': accountTransList, 'all_forecast': all_forecast})
+    '''
 
 def login(request):
     print('OpenBankingPController view.py - def login')
@@ -527,5 +610,5 @@ def register(request):
 def authResetPass(request):
     print('OpenBankingPController view.py - def authResetPass')
     return render(request, 'index-base.html')
-    # return render(request, 'auth-reset-pass.html')
+    #return render(request, 'auth-reset-pass.html')
 

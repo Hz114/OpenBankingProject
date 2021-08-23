@@ -1,0 +1,401 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} OpenBanking Forecast {% endblock %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="pcoded-content">
+  <div class="pcoded-inner-content">
+    <!-- [ breadcrumb ] start -->
+    <div class="page-header mb-2">
+      <div class="page-block">
+        <div class="row align-items-center">
+          <div class="col-md-12">
+            <div class="page-header-title">
+              <h5 class="m-b-10">OpenBanking Forecast</h5>
+            </div>
+            <ul class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{% url 'index'%}"><i class="feather icon-home"></i></a></li>
+              <li class="breadcrumb-item"><a href="javascript:">OpenBanking</a></li>
+              <li class="breadcrumb-item"><a href="javascript:">Forecast</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- [ breadcrumb ] end -->
+    <div class="main-body">
+      <div class="page-wrapper">
+        <!-- [ Main Content ] start -->
+        <div class="row">
+          <!--
+          <div class="col-md-6 col-xl-4">
+            {% for month in all_forecast %}
+              {{month}}
+              {% for key in all_forecast.month.keys %}
+                {{key}}
+              {% endfor%}
+            {% endfor %}
+
+          </div>
+          -->
+          <!--[ y and yhat section ] starts-->
+          <div class="col-md-12 col-xl-12">
+            <h5 class="m-0"><b>{{accountTrans.bank_name}}</b></h5>
+          </div>
+          <div class="col-md-6 col-xl-6">
+            <div class="card">
+              <div class="card-block">
+                <h6 class="mb-4">실제 소비량과 예측량 비교</h6>
+                <div class="m-2">
+                <canvas id="myLine_y" height="100"></canvas>
+              </div>
+              <script>
+                var ctx_y = document.getElementById('myLine_y').getContext('2d');
+                var myLine_y = new Chart(ctx_y, {
+                    type: 'line',
+                    data: {
+                        labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                        datasets: [{
+                            label: 'y_hat',
+                            data: [65, 59, 80, 81, 56, 55, 40],
+                            backgroundColor: ['rgba(255, 99, 132, 0.2)'],
+                            borderColor: ['rgb(255, 99, 132)'],
+                            tension: 0.3,
+                            borderWidth: 0.5
+                        },
+                        {
+                            label: '{{accountTrans.bank_name}} 월별 지출금액',
+                            data: [75, 69, 90, 91, 66, 65, 50],
+                            backgroundColor: ['rgba(153, 102, 255, 0.2)'],
+                            borderColor: ['rgb(153, 102, 255)'],
+                            tension: 0.3,
+                            borderWidth: 0.5
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                </script>
+              </div>
+            </div>
+          </div>
+          <!--[ y and yhat section ] end-->
+          <!--[ yhat and yhat_upper yhat_lower  section ] starts-->
+          <div class="col-md-6 col-xl-6">
+            <div class="card yearly-sales">
+              <div class="card-block">
+                <h6 class="mb-4">예측량의 최대/최소 비교</h6>
+                <div class="m-2">
+                <canvas id="myLine_forecast" height="100"></canvas>
+              </div>
+              <script>
+                var ctx_yhat = document.getElementById('myLine_forecast').getContext('2d');
+                var myLine_forecast = new Chart(ctx_yhat, {
+                    type: 'line',
+                    data: {
+                        labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                        datasets: [{
+                            label: 'y_hat',
+                            data: [65, 59, 80, 81, 56, 55, 40],
+                            backgroundColor: ['rgba(255, 99, 132, 0.2)'],
+                            borderColor: ['rgb(255, 99, 132)'],
+                            tension: 0.3,
+                            borderWidth: 0.5
+                        },
+                        {
+                            label: 'yhat_upper',
+                            data: [75, 69, 90, 91, 66, 65, 50],
+                            backgroundColor: ['rgba(255, 159, 64, 0.2)'],
+                            borderColor: ['rgb(255, 159, 64)'],
+                            tension: 0.3,
+                            borderWidth: 0.5
+                        },
+                        {
+                            label: 'yhat_lower',
+                            data: [85, 79, 100, 11, 76, 75, 60],
+                            backgroundColor: ['rgba(255, 205, 86, 0.2)'],
+                            borderColor: ['rgb(255, 205, 86)'],
+                            tension: 0.3,
+                            borderWidth: 0.5
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                </script>
+              </div>
+            </div>
+          </div>
+          <!--[ yhat and yhat_upper yhat_lower section ] end-->
+
+          <!--
+          <div class="col-xl-12 col-md-12 m-b-30">
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="false">Today</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active show" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="true">This Week</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">All</a>
+              </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+              <div class="tab-pane fade" id="home" role="tabpanel" aria-labelledby="home-tab">
+                <table class="table table-hover">
+                  <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Activity</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th class="text-right"></th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td>
+                      <h6 class="m-0"><img class="rounded-circle m-r-10" style="width:40px;" src="/static/assets/images/user/avatar-1.jpg" alt="activity-user">Ida Jorgensen</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">The quick brown fox</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">3:28 PM</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0 text-c-green">Done</h6>
+                    </td>
+                    <td class="text-right"><i class="fas fa-circle text-c-green f-10"></i></td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      <h6 class="m-0"><img class="rounded-circle  m-r-10" style="width:40px;" src="/static/assets/images/user/avatar-2.jpg" alt="activity-user">Albert Andersen</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">Jumps over the lazy</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">2:37 PM</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0 text-c-red">Missed</h6>
+                    </td>
+                    <td class="text-right"><i class="fas fa-circle text-c-red f-10"></i></td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      <h6 class="m-0"><img class="rounded-circle  m-r-10" style="width:40px;" src="/static/assets/images/user/avatar-3.jpg" alt="activity-user">Silje Larsen</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">Dog the quick brown</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">10:23 AM</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0 text-c-purple">Delayed</h6>
+                    </td>
+                    <td class="text-right"><i class="fas fa-circle text-c-purple f-10"></i></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <h6 class="m-0"><img class="rounded-circle  m-r-10" style="width:40px;" src="/static/assets/images/user/avatar-1.jpg" alt="activity-user">Ida Jorgensen</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">The quick brown fox</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">4:28 PM</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0 text-c-green">Done</h6>
+                    </td>
+                    <td class="text-right"><i class="fas fa-circle text-c-green f-10"></i></td>
+                  </tr>
+                  </tbody>
+                </table>
+
+              </div>
+              <div class="tab-pane fade active show" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                <table class="table table-hover">
+                  <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Activity</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th class="text-right"></th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td>
+                      <h6 class="m-0"><img class="rounded-circle  m-r-10" style="width:40px;" src="/static/assets/images/user/avatar-2.jpg" alt="activity-user">Albert Andersen</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">Jumps over the lazy</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">2:37 PM</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0 text-c-red">Missed</h6>
+                    </td>
+                    <td class="text-right"><i class="fas fa-circle text-c-red f-10"></i></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <h6 class="m-0"><img class="rounded-circle m-r-10" style="width:40px;" src="/static/assets/images/user/avatar-1.jpg" alt="activity-user">Ida Jorgensen</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">The quick brown fox</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">3:28 PM</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0 text-c-green">Done</h6>
+                    </td>
+                    <td class="text-right"><i class="fas fa-circle text-c-green f-10"></i></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <h6 class="m-0"><img class="rounded-circle  m-r-10" style="width:40px;" src="/static/assets/images/user/avatar-1.jpg" alt="activity-user">Ida Jorgensen</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">The quick brown fox</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">4:28 PM</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0 text-c-green">Done</h6>
+                    </td>
+                    <td class="text-right"><i class="fas fa-circle text-c-green f-10"></i></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <h6 class="m-0"><img class="rounded-circle  m-r-10" style="width:40px;" src="/static/assets/images/user/avatar-3.jpg" alt="activity-user">Silje Larsen</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">Dog the quick brown</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">10:23 AM</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0 text-c-purple">Delayed</h6>
+                    </td>
+                    <td class="text-right"><i class="fas fa-circle text-c-purple f-10"></i></td>
+                  </tr>
+                  </tbody>
+                </table>
+
+              </div>
+              <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                <table class="table table-hover">
+                  <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Activity</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th class="text-right"></th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td>
+                      <h6 class="m-0"><img class="rounded-circle  m-r-10" style="width:40px;" src="/static/assets/images/user/avatar-3.jpg" alt="activity-user">Silje Larsen</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">Dog the quick brown</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">10:23 AM</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0 text-c-purple">Delayed</h6>
+                    </td>
+                    <td class="text-right"><i class="fas fa-circle text-c-purple f-10"></i></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <h6 class="m-0"><img class="rounded-circle m-r-10" style="width:40px;" src="/static/assets/images/user/avatar-1.jpg" alt="activity-user">Ida Jorgensen</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">The quick brown fox</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">3:28 PM</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0 text-c-green">Done</h6>
+                    </td>
+                    <td class="text-right"><i class="fas fa-circle text-c-green f-10"></i></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <h6 class="m-0"><img class="rounded-circle  m-r-10" style="width:40px;" src="/static/assets/images/user/avatar-2.jpg" alt="activity-user">Albert Andersen</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">Jumps over the lazy</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">2:37 PM</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0 text-c-red">Missed</h6>
+                    </td>
+                    <td class="text-right"><i class="fas fa-circle text-c-red f-10"></i></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <h6 class="m-0"><img class="rounded-circle  m-r-10" style="width:40px;" src="/static/assets/images/user/avatar-1.jpg" alt="activity-user">Ida Jorgensen</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">The quick brown fox</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0">4:28 PM</h6>
+                    </td>
+                    <td>
+                      <h6 class="m-0 text-c-green">Done</h6>
+                    </td>
+                    <td class="text-right"><i class="fas fa-circle text-c-green f-10"></i></td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          -->
+        </div>
+        <!-- [ Main Content ] end -->
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}
