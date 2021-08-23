@@ -514,13 +514,13 @@ def forecast(request):
             for month_key, month_value in afterBalanceAmt_bank_dic[row_key].items():
                 if month_key == 'month':
                     continue
-                n = int(int(month_value) / 100) * 100
+                n = int(int(month_value) / 10) * 10
                 afterBalanceAmt_bank_dic[row_key][month_key] = n
 
         print(afterBalanceAmt_bank_dic)
 
         # fbprophet 적용 코드
-        path = "./OpenBankingController/static/forecast/afterBalanceAmt_forecast_"+ accountTrans["bank_name"] +"_30.csv"
+        path = "./OpenBankingController/static/forecast/afterBalanceAmt_forecast_"+ accountTrans["bank_name"] +"_5.csv"
         bank_forecast = pd.read_csv(path, sep=',', error_bad_lines=False, warn_bad_lines=False)
         bank_forecast = pd.DataFrame(bank_forecast)
 
@@ -541,13 +541,13 @@ def forecast(request):
             for month_key, month_value in bank_forecast[row_key].items():
                 if month_key == 'month':
                     continue
-                n = int(int(month_value) / 100) * 100
+                n = int(int(month_value) / 10) * 10
                 bank_forecast[row_key][month_key] = n
 
         print(bank_forecast)
 
         accountTrans['y'] = afterBalanceAmt_bank_dic
-        accountTrans['forecast'] = bank_forecast
+        accountTrans['yhat'] = bank_forecast
 
 
     return render(request, 'forecast.html', {'accountTransList': accountTransList})
