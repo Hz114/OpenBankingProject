@@ -520,7 +520,7 @@ def forecast(request):
         print(afterBalanceAmt_bank_dic)
 
         # fbprophet 적용 코드
-        path = "./OpenBankingController/static/forecast/afterBalanceAmt_forecast_"+ accountTrans["bank_name"] +"_5.csv"
+        path = "./OpenBankingController/static/forecast/afterBalanceAmt_forecast_"+ accountTrans["bank_name"] +"_30.csv"
         bank_forecast = pd.read_csv(path, sep=',', error_bad_lines=False, warn_bad_lines=False)
         bank_forecast = pd.DataFrame(bank_forecast)
 
