@@ -1,5 +1,8 @@
 # Open Banking Project
 
+### 시연동영상
+![시연동영상](openbankingProject.gif)
+
 ### 가상환경
 >가상환경 실행하기 </br>
 >*Django개발은 반드시 가상환경을 키고 시작*  
